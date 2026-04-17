@@ -3,12 +3,12 @@
   --panel: #fffaf0;
   --ink: #1b1b1b;
   --muted: #5d5d5d;
-  --green: #1f7a3f;
+  --green: #0f7b3d;
   --gold: #d8a625;
   --black: #111111;
   --accent: #f3d66b;
   --line: rgba(0, 0, 0, 0.08);
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  --shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
 }
 
 * {
@@ -18,7 +18,7 @@
 body {
   margin: 0;
   font-family: Inter, Arial, sans-serif;
-  background: linear-gradient(180deg, #f8f4ea 0%, #f4ecd7 100%);
+  background: linear-gradient(180deg, #f8f4ea 0%, #f3ebd7 100%);
   color: var(--ink);
 }
 
@@ -43,13 +43,26 @@ textarea {
   border-bottom: 1px solid var(--line);
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: 30;
+}
+
+.brand-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .brand-mark {
-  font-size: 1.8rem;
-  font-weight: 800;
+  font-size: 1.9rem;
+  font-weight: 900;
   letter-spacing: 0.02em;
+}
+
+.welcome-inline {
+  display: inline-block;
+  font-weight: 800;
+  color: var(--green);
+  font-size: 1rem;
 }
 
 .brand-sub {
@@ -82,7 +95,6 @@ textarea {
 .mini-btn,
 .quick-link,
 .tab,
-.location-chip,
 .text-btn {
   border: none;
   cursor: pointer;
@@ -90,7 +102,7 @@ textarea {
 }
 
 .solid-btn {
-  background: linear-gradient(135deg, var(--green), #2aa454);
+  background: linear-gradient(135deg, var(--green), #21a055);
   color: white;
   border-radius: 14px;
   padding: 12px 18px;
@@ -108,7 +120,7 @@ textarea {
 }
 
 .outline-light-btn {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.16);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 14px;
@@ -124,14 +136,17 @@ textarea {
 
 .hero {
   position: relative;
-  min-height: 440px;
+  min-height: 420px;
   display: flex;
   align-items: center;
   padding: 48px 32px;
-  background:
-    linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(31, 122, 63, 0.48)),
-    linear-gradient(45deg, #1f7a3f, #d8a625, #111111);
   overflow: hidden;
+}
+
+.jamaica-hero {
+  background:
+    linear-gradient(135deg, rgba(0, 0, 0, 0.55), rgba(15, 123, 61, 0.42)),
+    linear-gradient(45deg, #0f7b3d 0%, #d8a625 52%, #111111 100%);
 }
 
 .hero-overlay {
@@ -139,36 +154,28 @@ textarea {
   inset: 0;
   background:
     radial-gradient(circle at 20% 20%, rgba(255,255,255,0.18), transparent 30%),
-    radial-gradient(circle at 80% 30%, rgba(255,255,255,0.15), transparent 25%);
+    radial-gradient(circle at 80% 30%, rgba(255,255,255,0.12), transparent 25%);
 }
 
 .hero-content {
   position: relative;
   z-index: 1;
-  max-width: 860px;
+  max-width: 900px;
   color: white;
 }
 
-.hero-badge {
-  display: inline-block;
-  background: rgba(255,255,255,0.14);
-  border: 1px solid rgba(255,255,255,0.3);
-  border-radius: 999px;
-  padding: 8px 14px;
-  margin-bottom: 18px;
-  font-weight: 700;
-}
-
 .hero h1 {
-  font-size: clamp(2.3rem, 4vw, 4.3rem);
+  font-size: clamp(2.2rem, 4vw, 4.1rem);
   line-height: 1.05;
   margin: 0 0 16px;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.28);
 }
 
 .hero p {
-  font-size: 1.08rem;
+  font-size: 1.05rem;
   max-width: 720px;
-  color: rgba(255,255,255,0.9);
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 3px 16px rgba(0, 0, 0, 0.2);
 }
 
 .hero-buttons {
@@ -187,7 +194,7 @@ textarea {
   border-radius: 22px;
   background: rgba(255,255,255,0.14);
   border: 1px solid rgba(255,255,255,0.28);
-  max-width: 560px;
+  max-width: 620px;
 }
 
 .wave-emoji {
@@ -206,13 +213,13 @@ textarea {
 }
 
 .wave-title {
-  font-size: 1.2rem;
+  font-size: 1.18rem;
   font-weight: 800;
 }
 
 .wave-text {
-  color: rgba(255,255,255,0.9);
-  font-size: 0.97rem;
+  color: rgba(255,255,255,0.92);
+  font-size: 0.96rem;
 }
 
 .main-tabs {
@@ -223,7 +230,7 @@ textarea {
 }
 
 .tab {
-  background: rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.82);
   padding: 11px 16px;
   border-radius: 999px;
   font-weight: 700;
@@ -242,7 +249,10 @@ textarea {
 .signup-banner,
 .section-card,
 .feature-card,
-.listing-card {
+.listing-card,
+.stat-card,
+.action-card,
+.ad-card {
   background: var(--panel);
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
@@ -264,36 +274,59 @@ textarea {
   flex-wrap: wrap;
 }
 
-.feature-grid,
+.stats-grid,
+.quick-action-grid,
 .listing-grid,
 .partner-grid,
-.location-grid {
+.promise-grid,
+.ads-grid {
   display: grid;
   gap: 18px;
 }
 
-.feature-grid {
+.stats-grid {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  border-radius: 22px;
+  padding: 18px;
+  text-align: center;
+}
+
+.stat-card strong {
+  display: block;
+  font-size: 1.55rem;
+  margin-bottom: 6px;
+}
+
+.stat-card span {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.quick-action-grid {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   margin-bottom: 24px;
 }
 
-.feature-card {
-  padding: 22px;
-  border-radius: 24px;
-  min-height: 160px;
+.action-card {
+  border-radius: 22px;
+  padding: 18px;
+  text-align: left;
 }
 
-.feature-card.gold {
-  background: linear-gradient(135deg, #f7e09c, #fff7dc);
+.action-card strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 1rem;
 }
 
-.feature-card.green {
-  background: linear-gradient(135deg, #d7f1de, #f5fff6);
-}
-
-.feature-card.black {
-  background: linear-gradient(135deg, #2a2a2a, #111111);
-  color: white;
+.action-card span {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
 }
 
 .quick-links {
@@ -323,7 +356,12 @@ textarea {
 }
 
 .section-card.narrow {
-  max-width: 760px;
+  max-width: 820px;
+}
+
+.inner-card {
+  margin-top: 18px;
+  background: rgba(255,255,255,0.6);
 }
 
 .section-header {
@@ -340,12 +378,21 @@ textarea {
 }
 
 .listing-grid {
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
 }
 
 .listing-card {
   border-radius: 22px;
   padding: 20px;
+}
+
+.listing-topline {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
 }
 
 .pill {
@@ -354,9 +401,18 @@ textarea {
   color: #6a5200;
   border-radius: 999px;
   padding: 7px 12px;
-  font-size: 0.83rem;
+  font-size: 0.8rem;
   font-weight: 800;
-  margin-bottom: 10px;
+}
+
+.micro-badge {
+  display: inline-block;
+  background: #eef4ff;
+  color: #204a9e;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
 }
 
 .listing-card h3 {
@@ -376,10 +432,22 @@ textarea {
   color: #333;
 }
 
+.listing-qty {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--green);
+}
+
+.sold-out {
+  opacity: 0.75;
+}
+
 .card-actions {
   display: flex;
   gap: 10px;
   margin-top: 16px;
+  flex-wrap: wrap;
 }
 
 .mini-btn {
@@ -393,6 +461,22 @@ textarea {
 .linkish {
   text-decoration: none;
   color: var(--green);
+}
+
+.payment-links {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.payment-pill {
+  background: #f5f5f5;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .filters-bar,
@@ -409,7 +493,7 @@ textarea {
 }
 
 .two-col {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 }
 
 .support-list {
@@ -420,11 +504,22 @@ textarea {
 .info-box,
 .account-box,
 .upload-box,
-.partner-box {
+.partner-box,
+.partner-plan,
+.ad-card {
   border: 1px dashed rgba(0, 0, 0, 0.14);
   background: rgba(255,255,255,0.55);
   border-radius: 18px;
   padding: 16px;
+}
+
+.upload-left {
+  text-align: left;
+}
+
+.hidden-input {
+  display: block;
+  margin-top: 10px;
 }
 
 .partner-grid {
@@ -432,22 +527,32 @@ textarea {
   margin-top: 18px;
 }
 
-.location-grid {
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  margin-top: 16px;
+.partner-plan-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
 }
 
-.location-chip {
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 12px;
-  font-weight: 700;
+.partner-plan strong {
+  display: block;
+  margin-bottom: 6px;
 }
 
-.location-chip.active {
-  background: var(--green);
-  color: white;
+.partner-plan span {
+  display: inline-block;
+  color: var(--green);
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.ads-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin-bottom: 16px;
+}
+
+.ad-card strong {
+  display: block;
+  margin-bottom: 8px;
 }
 
 .post-form {
@@ -474,7 +579,66 @@ textarea {
   margin-bottom: 10px;
 }
 
-@media (max-width: 800px) {
+.subscribe-note {
+  margin-top: 12px;
+  color: var(--green);
+  font-weight: 700;
+}
+
+.qr-box {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.qr-image {
+  width: 180px;
+  height: 180px;
+  border-radius: 18px;
+  background: white;
+  padding: 10px;
+  border: 1px solid var(--line);
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+  padding: 20px;
+}
+
+.modal-card {
+  width: min(560px, 100%);
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+}
+
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.modal-sub {
+  color: var(--muted);
+}
+
+.quick-link:hover,
+.mini-btn:hover,
+.partner-plan:hover,
+.action-card:hover,
+.ad-card:hover {
+  box-shadow: 0 14px 30px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 820px) {
   .topbar,
   .signup-banner,
   .section-header {
@@ -496,118 +660,8 @@ textarea {
   .filters-bar {
     grid-template-columns: 1fr;
   }
-}
-/* --- Naborly Heart Upgrade Additions --- */
 
-.jamaica-hero {
-  background:
-    linear-gradient(135deg, rgba(0,0,0,0.52), rgba(31,122,63,0.42)),
-    linear-gradient(45deg, #0b7a3b 0%, #d8a625 50%, #111111 100%);
-}
-
-.quick-action-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.action-card {
-  border: 1px solid var(--line);
-  background: white;
-  border-radius: 22px;
-  padding: 18px;
-  text-align: left;
-  box-shadow: var(--shadow);
-}
-
-.action-card strong {
-  display: block;
-  font-size: 1rem;
-  margin-bottom: 8px;
-}
-
-.action-card span {
-  color: var(--muted);
-  font-size: 0.92rem;
-  line-height: 1.45;
-}
-
-.action-card:hover {
-  transform: translateY(-2px);
-}
-
-.micro-badge {
-  display: inline-block;
-  margin-left: 8px;
-  background: #eef4ff;
-  color: #204a9e;
-  border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 0.72rem;
-  font-weight: 800;
-}
-
-.promise-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-  gap: 16px;
-  margin-top: 14px;
-}
-
-.partner-plan-grid {
-  display: grid;
-  gap: 14px;
-  margin-top: 18px;
-}
-
-.partner-plan {
-  border: 1px solid var(--line);
-  background: white;
-  border-radius: 18px;
-  padding: 16px;
-}
-
-.partner-plan strong {
-  display: block;
-  margin-bottom: 6px;
-}
-
-.partner-plan span {
-  display: inline-block;
-  font-weight: 800;
-  color: var(--green);
-  margin-bottom: 8px;
-}
-
-.partner-plan p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 0.92rem;
-}
-
-.subscribe-note {
-  margin-top: 12px;
-  color: var(--green);
-  font-weight: 700;
-}
-
-.hero h1 {
-  text-shadow: 0 4px 18px rgba(0,0,0,0.28);
-}
-
-.hero p {
-  text-shadow: 0 2px 12px rgba(0,0,0,0.2);
-}
-
-.quick-link:hover,
-.mini-btn:hover,
-.partner-plan:hover,
-.action-card:hover {
-  box-shadow: 0 14px 30px rgba(0,0,0,0.08);
-}
-
-@media (max-width: 800px) {
+  .stats-grid,
   .quick-action-grid,
   .promise-grid {
     grid-template-columns: 1fr;
