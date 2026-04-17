@@ -1136,7 +1136,34 @@ const handleSignOut = async () => {
                 <div className="account-line"><strong>Nabor Points:</strong> {naborPoints}</div>
                 <div className="account-line"><strong>My Posts:</strong> {myPosts.length}</div>
               </div>
-
+<div className="card-actions">
+  {user ? (
+    <button className="mini-btn" onClick={handleSignOut}>
+      Sign Out
+    </button>
+  ) : (
+    <>
+      <button
+        className="mini-btn"
+        onClick={() => {
+          setAuthMode("signin");
+          setShowAuthModal(true);
+        }}
+      >
+        Sign In
+      </button>
+      <button
+        className="mini-btn"
+        onClick={() => {
+          setAuthMode("signup");
+          setShowAuthModal(true);
+        }}
+      >
+        Create Free Account
+      </button>
+    </>
+  )}
+</div>
               <div className="section-card inner-card">
                 <h3>Share & Earn</h3>
                 <p>Share Naborly by QR, WhatsApp, or social and earn Nabor Points.</p>
@@ -1191,7 +1218,78 @@ const handleSignOut = async () => {
           </section>
         )}
       </main>
+{showAuthModal ? (
+  <div className="modal-backdrop">
+    <div className="modal-card">
+      <div className="modal-head">
+        <h3>{authMode === "signup" ? "Create Free Account" : "Sign In"}</h3>
+        <button className="mini-btn" onClick={() => setShowAuthModal(false)}>
+          Close
+        </button>
+      </div>
 
+      <form
+        className="post-form"
+        onSubmit={authMode === "signup" ? handleSignUp : handleSignIn}
+      >
+        {authMode === "signup" ? (
+          <>
+            <input
+              className="search-input"
+              name="fullName"
+              placeholder="Full name"
+              value={authForm.fullName}
+              onChange={handleAuthChange}
+            />
+            <input
+              className="search-input"
+              name="whatsapp"
+              placeholder="WhatsApp number"
+              value={authForm.whatsapp}
+              onChange={handleAuthChange}
+            />
+          </>
+        ) : null}
+
+        <input
+          className="search-input"
+          name="email"
+          type="email"
+          placeholder="Email"
+          value={authForm.email}
+          onChange={handleAuthChange}
+        />
+
+        <input
+          className="search-input"
+          name="password"
+          type="password"
+          placeholder="Password"
+          value={authForm.password}
+          onChange={handleAuthChange}
+        />
+
+        <button className="solid-btn" type="submit">
+          {authMode === "signup" ? "Create Account" : "Sign In"}
+        </button>
+
+        <button
+          type="button"
+          className="mini-btn"
+          onClick={() =>
+            setAuthMode((prev) => (prev === "signup" ? "signin" : "signup"))
+          }
+        >
+          {authMode === "signup"
+            ? "Already have an account? Sign In"
+            : "Need an account? Sign Up"}
+        </button>
+
+        {authMessage ? <p className="subscribe-note">{authMessage}</p> : null}
+      </form>
+    </div>
+  </div>
+) : null}
       {bookingItem ? (
         <div className="modal-backdrop">
           <div className="modal-card">
