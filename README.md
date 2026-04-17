@@ -1,33 +1,22 @@
-# Naborly Real App Starter
+# Naborly Launch Kit
 
-This is a deployable React/Vite starter for a neighborhood marketplace app.
+1. Delete old repo files and upload these files to GitHub.
+2. In Supabase SQL Editor, run:
+   - supabase/schema.sql
+   - supabase/storage.sql
+   - optional: supabase/seed.sql
+3. In Vercel add:
+   - VITE_SUPABASE_URL
+   - VITE_SUPABASE_ANON_KEY
+4. Redeploy.
 
-## Included
-- Sign-in flow
-- Browse feed with search and filters
-- Save favorites
-- Create listing form
-- Image upload preview
-- Report listing
-- Admin moderation queue
-- Local persistence with `localStorage`
-- Backend handoff notes for Supabase/Firebase/custom API
+This version gives you:
+- live signup
+- live posts/events reads
+- live favorites
 
-## Run locally
-```bash
-npm install
-npm run dev
-```
-
-## Build
-```bash
-npm install
-npm run build
-```
-
-## Deploy
-- Vercel: import the folder/repo and use default Vite settings.
-- Netlify: build command `npm run build`, publish directory `dist`.
-
-## Notes
-This starter uses local storage as a mock backend so the UX works immediately.
+Next phase after launch:
+- create posts from app
+- uploads from app
+- real orders/reservations
+- payment capture

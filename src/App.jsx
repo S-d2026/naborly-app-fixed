@@ -1,1504 +1,283 @@
-import { useEffect, useMemo, useState } from "react";
-import { supabase } from "./supabaseClient";
-import "./styles.css";
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Heart, MapPin, MessageCircle, PlusCircle, User, Store, Gift, CalendarDays, X, Phone,
+  CreditCard, Truck, Clock3, CheckCircle2, Upload, Bell, Navigation, CalendarPlus,
+  Search, Share2, QrCode, Wallet, Loader2,
+} from 'lucide-react';
 
-const APP_URL = "https://naborlyja.com/";
-const SHARE_TEXT =
-  "Join Naborly JA — a neighborhood ecosystem for food, support, talent, events, vendors, and community connection.";
+const APP_NAME = 'Naborly';
+const DEFAULT_REFERRAL = 'NABOR-2026';
+const SUPABASE_URL = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_SUPABASE_URL : '';
+const SUPABASE_ANON_KEY = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_SUPABASE_ANON_KEY : '';
+const hasSupabase = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+const supabase = hasSupabase ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-const MARKETS = [
-  "Naborly JA",
-  "Naborly Barbados",
-  "Naborly Trinidad",
-  "Naborly Guyana",
-  "Naborly UK",
-  "Naborly USA",
-  "Naborly Toronto",
+const MOCK_EVENTS = [
+  { id: 'e0', title: 'Kingston Night Market', loc: 'Kingston', date: 'Tonight 7:00 PM', host: 'City Events', whatsapp: '18765552000', desc: 'Food, music, shopping, and family fun.', price: 'JMD 1500', featured: true },
+  { id: 'e1', title: 'Community Food Drive', loc: 'Kingston', date: 'Sat 2:00 PM', host: 'Nabor Volunteers', whatsapp: '18765552001', desc: 'Free groceries and family support.', price: 'Free', featured: false },
+  { id: 'e2', title: 'Vendor Pop-Up Market', loc: 'Montego Bay', date: 'Sun 11:00 PM', host: 'Island Makers', whatsapp: '18765552002', desc: 'Local vendors, food, music, gifts.', price: 'JMD 500', featured: true },
+  { id: 'e3', title: 'Youth Football Clinic', loc: 'St. James', date: 'Fri 4:00 PM', host: 'Coach Devon', whatsapp: '18765552003', desc: 'Free youth sports training.', price: 'Free', featured: false },
 ];
 
-const POST_CATEGORIES = [
-  "Food for Sale",
-  "Giveaways",
-  "Restaurant Donations",
-  "Community Donations",
-  "Local Talent / Services",
-  "Events in the Naborhood",
-  "Help Request",
+const MOCK_POSTS = [
+  { id: 'p1', title: 'Fresh Fruit Bags', type: 'Food', price: 'JMD $700', loc: 'Kingston • Near St. Bess Pharmacy', parish: 'Kingston', qtyTotal: 10, qtyLeft: 8, desc: 'Fresh banana, orange, pineapple, and mango bags available for same-day pickup.', vendor: 'Marcia Produce', whatsapp: '18765551001', free: false, tracking: 'Ready for pickup', highlight: 'Pickup today', imageUrl: '' },
+  { id: 'p2', title: 'Restaurant Meal Donations', type: 'Free Support', price: 'Free', loc: 'Kingston • Half Way Tree', parish: 'Kingston', qtyTotal: 20, qtyLeft: 12, desc: 'Prepared meals available while supplies last. First come, first served.', vendor: 'Island Kitchen', whatsapp: '18765551002', free: true, tracking: 'On the way', highlight: 'Donation pickup', imageUrl: '' },
+  { id: 'p3', title: 'Driver for Appointments', type: 'Talent', price: 'From JMD $2,000', loc: 'Montego Bay', parish: 'St. James', qtyTotal: 6, qtyLeft: 5, desc: 'Reliable local rides for appointments, school pickup, and errands.', vendor: 'Andre Rides', whatsapp: '18765551003', free: false, tracking: 'Reserved', highlight: '5 slots open', imageUrl: '' },
+  { id: 'p4', title: 'Community Cleaning Help', type: 'Free Support', price: 'Free', loc: 'St. Andrew • Near Hope Gardens', parish: 'St. Andrew', qtyTotal: 4, qtyLeft: 2, desc: 'Volunteer cleaning help available for seniors and urgent situations.', vendor: 'Nabor Volunteers', whatsapp: '18765551004', free: true, tracking: 'Reserved', highlight: '2 slots left', imageUrl: '' },
 ];
 
-const FILTER_CATEGORIES = ["All", ...POST_CATEGORIES];
+const MARKETS = { JA: 'Welcome to Naborly JA', UK: 'Welcome to Naborly UK', BB: 'Welcome to Naborly Barbados', LA: 'Welcome to Naborly Latin America', AF: 'Welcome to Naborly Africa', WW: 'Welcome to Naborly Worldwide' };
+const CURRENCY_MAP = { JA: 'JMD', UK: 'GBP', BB: 'BBD', LA: 'USD', AF: 'USD', WW: 'USD' };
+const PAYMENT_OPTIONS = {
+  JA: ['Debit/Credit Card', 'Lynk Wallet', 'NCB Pay', 'WiPay', 'Cash on Pickup'],
+  UK: ['Debit/Credit Card', 'Apple Pay', 'Google Pay', 'PayPal', 'Cash on Pickup'],
+  BB: ['Debit/Credit Card', 'WiPay', 'Bank Transfer', 'Cash on Pickup'],
+  LA: ['Debit/Credit Card', 'PayPal', 'Bank Transfer', 'Cash on Pickup'],
+  AF: ['Debit/Credit Card', 'Mobile Money', 'Bank Transfer', 'Cash on Pickup'],
+  WW: ['Debit/Credit Card', 'PayPal', 'Bank Transfer', 'Cash on Pickup'],
+};
+const PARISH_MAP = {
+  JA: ['Kingston', 'St. Andrew', 'St. Catherine', 'Clarendon', 'Manchester', 'St. Elizabeth', 'Westmoreland', 'Hanover', 'St. James', 'Trelawny', 'St. Ann', 'St. Mary', 'Portland', 'St. Thomas'],
+  UK: ['London', 'Birmingham', 'Manchester', 'Leeds', 'Liverpool'],
+  BB: ['Christ Church', 'St. Michael', 'St. James', 'St. Philip'],
+  LA: ['Santo Domingo', 'San Juan', 'Port-au-Prince', 'Kingston DR'],
+  AF: ['Lagos', 'Accra', 'Nairobi', 'Johannesburg'],
+  WW: ['Global'],
+};
+const TRACKING_STEPS = ['Reserved', 'Confirmed', 'On the way', 'Ready for pickup', 'Delivered'];
 
-const PAYMENT_OPTIONS = [
-  "Card",
-  "Bank Transfer",
-  "Cash at Pickup",
-  "Local Wallet",
-];
-
-const STARTER_LISTINGS = [
-  {
-    id: 1,
-    title: "Fresh fruit bags",
-    category: "Food for Sale",
-    location: "Kingston, Jamaica",
-    price: "JMD $700",
-    description: "Banana, orange, mango, and pineapple bags available for same-day pickup.",
-    whatsapp: "18765551001",
-    seller: "Marcia's Produce",
-    quantity: 8,
-    claimed: 2,
-    itemsAvailable: "Banana, orange, pineapple, mango",
-    badge: "Trusted Vendor",
-    ownPost: false,
-    featured: true,
-  },
-  {
-    id: 2,
-    title: "Restaurant meal donations",
-    category: "Restaurant Donations",
-    location: "Half Way Tree, Jamaica",
-    price: "Free",
-    description: "Prepared meals available for evening pickup while quantities last.",
-    whatsapp: "18765551002",
-    seller: "Island Kitchen",
-    quantity: 20,
-    claimed: 11,
-    itemsAvailable: "Rice meals, chicken meals, vegetable meals",
-    badge: "Restaurant Donation",
-    ownPost: false,
-    featured: true,
-  },
-  {
-    id: 3,
-    title: "Light housekeeping and support",
-    category: "Local Talent / Services",
-    location: "Portmore, Jamaica",
-    price: "JMD $1,500 / visit",
-    description: "Cleaning, tidying, errands, and light household support.",
-    whatsapp: "18765551003",
-    seller: "Sandra M.",
-    quantity: 3,
-    claimed: 0,
-    itemsAvailable: "Morning slots, afternoon slots, evening slots",
-    badge: "Local Talent",
-    ownPost: false,
-    featured: true,
-  },
-  {
-    id: 4,
-    title: "Community family day",
-    category: "Events in the Naborhood",
-    location: "Ocho Rios, Jamaica",
-    price: "Free Entry",
-    description: "Music, food vendors, giveaways, children activities, and local business booths.",
-    whatsapp: "18765551004",
-    seller: "City Organizers",
-    quantity: 150,
-    claimed: 43,
-    itemsAvailable: "Family entry spots",
-    badge: "Community Event",
-    ownPost: false,
-    featured: false,
-  },
-  {
-    id: 5,
-    title: "Neighborhood grocery giveaway",
-    category: "Giveaways",
-    location: "Spanish Town, Jamaica",
-    price: "Free",
-    description: "Pantry items and produce for pickup while supplies last.",
-    whatsapp: "18765551005",
-    seller: "Community Hub",
-    quantity: 15,
-    claimed: 15,
-    itemsAvailable: "Rice, canned goods, bread, produce",
-    badge: "Fully Claimed",
-    ownPost: false,
-    featured: false,
-  },
-  {
-    id: 6,
-    title: "Church pantry support",
-    category: "Community Donations",
-    location: "St. Catherine, Jamaica",
-    price: "Free",
-    description: "Food support and household essentials available by referral.",
-    whatsapp: "18765551006",
-    seller: "Grace Community Church",
-    quantity: 12,
-    claimed: 5,
-    itemsAvailable: "Food boxes, baby items, toiletries",
-    badge: "Partner",
-    ownPost: false,
-    featured: false,
-  },
-  {
-    id: 7,
-    title: "Driver available for appointments",
-    category: "Local Talent / Services",
-    location: "Montego Bay, Jamaica",
-    price: "From JMD $2,000",
-    description: "Local rides for appointments, school pickup, errands, and airport runs.",
-    whatsapp: "18765551007",
-    seller: "Andre Rides",
-    quantity: 5,
-    claimed: 1,
-    itemsAvailable: "5 open booking slots",
-    badge: "Book Talent",
-    ownPost: false,
-    featured: false,
-  },
-];
-
-function whatsappLink(number, title) {
-  const clean = String(number || "").replace(/\D/g, "");
-  const msg = encodeURIComponent(`Hi, I saw "${title}" on Naborly JA. Is it still available?`);
-  return clean ? `https://wa.me/${clean}?text=${msg}` : `https://wa.me/?text=${msg}`;
+function getPaymentOptions(market) { return PAYMENT_OPTIONS[market] || PAYMENT_OPTIONS.WW; }
+function getCurrency(market) { return CURRENCY_MAP[market] || 'USD'; }
+function safeWhatsapp(number, title, area = '') {
+  const clean = String(number || '').replace(/\D/g, '');
+  const areaText = area && area !== 'All' ? ` (${area})` : '';
+  const text = encodeURIComponent(`Hi, I saw "${title}" on ${APP_NAME}${areaText}. Is it still available?`);
+  return `https://wa.me/${clean}?text=${text}`;
 }
+function shareWhatsApp(text) { return `https://wa.me/?text=${encodeURIComponent(text)}`; }
+function label(language, en, patwa) { return language === 'patwa' ? patwa : en; }
+function trackingIndex(status) { return Math.max(0, TRACKING_STEPS.indexOf(status)); }
+function statusIcon(status) { if (status === 'Delivered') return <CheckCircle2 className='w-4 h-4' />; if (status === 'On the way') return <Truck className='w-4 h-4' />; return <Clock3 className='w-4 h-4' />; }
+function wait(ms = 250) { return new Promise((resolve) => setTimeout(resolve, ms)); }
+async function getCurrentUser() { if (!supabase) return null; const { data } = await supabase.auth.getUser(); return data?.user ?? null; }
 
-function qtyLeft(item) {
-  return Math.max(Number(item.quantity || 0) - Number(item.claimed || 0), 0);
-}
+const mockApi = {
+  async getPosts() { await wait(); return [...MOCK_POSTS]; },
+  async getEvents() { await wait(); return [...MOCK_EVENTS]; },
+  async getFavorites() { await wait(); return ['p1']; },
+  async getSavedEvents() { await wait(); return ['e1']; },
+  async toggleFavorite(currentIds, id) { await wait(); return currentIds.includes(id) ? currentIds.filter((x) => x !== id) : [...currentIds, id]; },
+  async toggleSavedEvent(currentIds, id) { await wait(); return currentIds.includes(id) ? currentIds.filter((x) => x !== id) : [...currentIds, id]; },
+};
 
-function listingStatus(item) {
-  const left = qtyLeft(item);
-  if (left <= 0) return "Claimed / No longer available";
-  if (left <= 2) return `Only ${left} left`;
-  return `${left} available`;
-}
+const supabaseApi = {
+  async getPosts() {
+    if (!supabase) return [...MOCK_POSTS];
+    const { data, error } = await supabase.from('posts').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data || []).map((row) => ({
+      id: row.id, title: row.title, type: row.type, price: row.price, loc: row.loc, parish: row.parish,
+      qtyTotal: row.qty_total ?? 0, qtyLeft: row.qty_left ?? 0, desc: row.desc, vendor: row.vendor,
+      whatsapp: row.whatsapp, free: Boolean(row.free), tracking: row.tracking || 'Reserved',
+      highlight: row.highlight || '', imageUrl: row.image_url || '',
+    }));
+  },
+  async getEvents() {
+    if (!supabase) return [...MOCK_EVENTS];
+    const { data, error } = await supabase.from('events').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    return (data || []).map((row) => ({
+      id: row.id, title: row.title, loc: row.loc, date: row.date_text, host: row.host,
+      whatsapp: row.whatsapp, desc: row.desc, price: row.price, featured: Boolean(row.featured),
+    }));
+  },
+  async getFavorites() {
+    if (!supabase) return ['p1'];
+    const user = await getCurrentUser();
+    if (!user) return [];
+    const { data, error } = await supabase.from('favorites').select('item_id').eq('user_id', user.id).eq('item_type', 'post');
+    if (error) throw error;
+    return (data || []).map((row) => row.item_id);
+  },
+  async getSavedEvents() {
+    if (!supabase) return ['e1'];
+    const user = await getCurrentUser();
+    if (!user) return [];
+    const { data, error } = await supabase.from('favorites').select('item_id').eq('user_id', user.id).eq('item_type', 'event');
+    if (error) throw error;
+    return (data || []).map((row) => row.item_id);
+  },
+  async toggleFavorite(currentIds, id) {
+    if (!supabase) return currentIds.includes(id) ? currentIds.filter((x) => x !== id) : [...currentIds, id];
+    const user = await getCurrentUser();
+    if (!user) return currentIds;
+    if (currentIds.includes(id)) {
+      const { error } = await supabase.from('favorites').delete().eq('user_id', user.id).eq('item_type', 'post').eq('item_id', id);
+      if (error) throw error;
+      return currentIds.filter((x) => x !== id);
+    }
+    const { error } = await supabase.from('favorites').insert({ user_id: user.id, item_type: 'post', item_id: id });
+    if (error) throw error;
+    return [...currentIds, id];
+  },
+  async toggleSavedEvent(currentIds, id) {
+    if (!supabase) return currentIds.includes(id) ? currentIds.filter((x) => x !== id) : [...currentIds, id];
+    const user = await getCurrentUser();
+    if (!user) return currentIds;
+    if (currentIds.includes(id)) {
+      const { error } = await supabase.from('favorites').delete().eq('user_id', user.id).eq('item_type', 'event').eq('item_id', id);
+      if (error) throw error;
+      return currentIds.filter((x) => x !== id);
+    }
+    const { error } = await supabase.from('favorites').insert({ user_id: user.id, item_type: 'event', item_id: id });
+    if (error) throw error;
+    return [...currentIds, id];
+  },
+};
 
-function qrCodeUrl(link) {
-  return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(link)}`;
-}
+function useAppData() {
+  const api = hasSupabase ? supabaseApi : mockApi;
+  const [posts, setPosts] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [favoriteIds, setFavoriteIds] = useState([]);
+  const [savedEventIds, setSavedEventIds] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-function WaveHello() {
-  return (
-    <div className="wave-card">
-      <div className="wave-emoji">👋🏾</div>
-      <div>
-        <div className="wave-title">Hello Nabor</div>
-        <div className="wave-text">
-          A neighborhood ecosystem for food, support, talent, events, vendors,
-          donations, and community connection.
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function App() {
-  const [activeTab, setActiveTab] = useState("home");
-  const [selectedMarket, setSelectedMarket] = useState("Naborly JA");
-  const [selectedCategory, setSelectedCategory] = useState("All");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showSignup, setShowSignup] = useState(true);
-  const [shareCopied, setShareCopied] = useState(false);
-  const [naborPoints] = useState(340);
-  const [savedIds, setSavedIds] = useState([1, 2, 3]);
-  const [bookingItem, setBookingItem] = useState(null);
-  const [medSubmitted, setMedSubmitted] = useState(false);
-  const [bookingMessage, setBookingMessage] = useState("");
-  const [subscribeEmail, setSubscribeEmail] = useState("");
-  const [subscribeMessage, setSubscribeMessage] = useState("");
-  const [listings, setListings] = useState(STARTER_LISTINGS);
-  const [editingId, setEditingId] = useState(null);
-
-  const [user, setUser] = useState(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authMode, setAuthMode] = useState("signin");
-  const [authMessage, setAuthMessage] = useState("");
-
-  const [authForm, setAuthForm] = useState({
-    fullName: "",
-    whatsapp: "",
-    email: "",
-    password: "",
-  });
-
-  const [formData, setFormData] = useState({
-    title: "",
-    category: "Food for Sale",
-    location: "",
-    price: "",
-    description: "",
-    whatsapp: "",
-    quantity: "",
-    itemsAvailable: "",
-    imageName: "",
-    imagePreview: "",
-  });
-
-  const [bookingData, setBookingData] = useState({
-    date: "",
-    time: "",
-    notes: "",
-  });
-
-  const [medForm, setMedForm] = useState({
-    patientName: "",
-    medicationNeed: "",
-    pickupMode: "Pickup",
-    paymentOption: "Card",
-    whatsapp: "",
-    notes: "",
-    prescriptionName: "",
-  });
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user || null);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user || null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const stats = useMemo(() => {
-    const activeListings = listings.filter((item) => qtyLeft(item) > 0).length;
-    const talentCount = listings.filter(
-      (item) => item.category === "Local Talent / Services" && qtyLeft(item) > 0
-    ).length;
-    const eventCount = listings.filter(
-      (item) => item.category === "Events in the Naborhood" && qtyLeft(item) > 0
-    ).length;
-    const donationCount = listings.filter(
-      (item) =>
-        item.category === "Restaurant Donations" ||
-        item.category === "Community Donations" ||
-        item.category === "Giveaways" ||
-        item.category === "Help Request"
-    ).length;
-
-    return { activeListings, talentCount, eventCount, donationCount };
-  }, [listings]);
-
-  const filteredListings = useMemo(() => {
-    return listings.filter((item) => {
-      const categoryOk =
-        selectedCategory === "All" || item.category === selectedCategory;
-      const q = searchTerm.toLowerCase();
-      const searchOk =
-        item.title.toLowerCase().includes(q) ||
-        item.description.toLowerCase().includes(q) ||
-        item.location.toLowerCase().includes(q) ||
-        item.seller.toLowerCase().includes(q) ||
-        item.category.toLowerCase().includes(q) ||
-        item.itemsAvailable.toLowerCase().includes(q);
-      return categoryOk && searchOk;
-    });
-  }, [listings, selectedCategory, searchTerm]);
-
-  const supportListings = useMemo(() => {
-    return listings.filter(
-      (item) =>
-        item.category === "Giveaways" ||
-        item.category === "Restaurant Donations" ||
-        item.category === "Community Donations" ||
-        item.category === "Help Request"
-    );
-  }, [listings]);
-
-  const featuredListings = listings.filter((item) => item.featured).slice(0, 4);
-  const savedListings = listings.filter((item) => savedIds.includes(item.id));
-  const myPosts = listings.filter((item) => item.ownPost);
-
-  const toggleSave = (id) => {
-    setSavedIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
-
-  const copyShareLink = async () => {
+  const loadAll = useCallback(async () => {
+    setLoading(true); setError('');
     try {
-      await navigator.clipboard.writeText(APP_URL);
-      setShareCopied(true);
-      setTimeout(() => setShareCopied(false), 1800);
-    } catch {
-      alert("Could not copy link.");
+      const [postsData, eventsData, favoritesData, savedEventsData] = await Promise.all([
+        api.getPosts(), api.getEvents(), api.getFavorites(), api.getSavedEvents(),
+      ]);
+      setPosts(postsData); setEvents(eventsData); setFavoriteIds(favoritesData); setSavedEventIds(savedEventsData);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load app data.');
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [api]);
 
-  const handleSubscribe = () => {
-    if (!subscribeEmail.trim()) return;
-    setSubscribeMessage("You are subscribed to Naborly updates.");
-    setSubscribeEmail("");
-  };
+  useEffect(() => { loadAll(); }, [loadAll]);
 
-  const handleAuthChange = (e) => {
-    const { name, value } = e.target;
-    setAuthForm((prev) => ({ ...prev, [name]: value }));
-  };
+  const toggleFavorite = useCallback(async (id) => {
+    try { setFavoriteIds(await api.toggleFavorite(favoriteIds, id)); }
+    catch (err) { setError(err instanceof Error ? err.message : 'Could not update favorites.'); }
+  }, [api, favoriteIds]);
 
-  const handleSignUp = async (e) => {
-    e.preventDefault();
-    setAuthMessage("");
+  const toggleSavedEvent = useCallback(async (id) => {
+    try { setSavedEventIds(await api.toggleSavedEvent(savedEventIds, id)); }
+    catch (err) { setError(err instanceof Error ? err.message : 'Could not update saved events.'); }
+  }, [api, savedEventIds]);
 
-    const { data, error } = await supabase.auth.signUp({
-      email: authForm.email,
-      password: authForm.password,
-      options: {
-        data: {
-          full_name: authForm.fullName,
-          whatsapp: authForm.whatsapp,
-        },
-      },
-    });
+  return { posts, events, favoriteIds, savedEventIds, loading, error, toggleFavorite, toggleSavedEvent, isLive: hasSupabase };
+}
 
-    if (error) {
-      setAuthMessage(error.message);
-      return;
-    }
-
-    if (data.user) {
-      await supabase.from("profiles").upsert({
-        id: data.user.id,
-        full_name: authForm.fullName,
-        whatsapp: authForm.whatsapp,
-        market: selectedMarket,
-      });
-    }
-
-    setAuthMessage("Account created.");
-  };
-
-  const handleSignIn = async (e) => {
-    e.preventDefault();
-    setAuthMessage("");
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email: authForm.email,
-      password: authForm.password,
-    });
-
-    if (error) {
-      setAuthMessage(error.message);
-      return;
-    }
-
-    setShowAuthModal(false);
-    setActiveTab("account");
-  };
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-  };
-
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handlePostUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setFormData((prev) => ({
-        ...prev,
-        imageName: file.name,
-        imagePreview: reader.result,
-      }));
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const submitPost = (e) => {
-    e.preventDefault();
-
-    if (!formData.title || !formData.location || !formData.description) return;
-
-    if (editingId) {
-      setListings((prev) =>
-        prev.map((item) =>
-          item.id === editingId
-            ? {
-                ...item,
-                ...formData,
-                quantity: Number(formData.quantity || 1),
-              }
-            : item
-        )
-      );
-    } else {
-      const newItem = {
-        id: Date.now(),
-        title: formData.title,
-        category: formData.category,
-        location: formData.location,
-        price: formData.price || "Free",
-        description: formData.description,
-        whatsapp: formData.whatsapp,
-        seller: user?.user_metadata?.full_name || user?.email || "You",
-        quantity: Number(formData.quantity || 1),
-        claimed: 0,
-        itemsAvailable: formData.itemsAvailable || "See listing details",
-        badge: "New Post",
-        ownPost: true,
-        featured: false,
-        imageName: formData.imageName,
-        imagePreview: formData.imagePreview,
-      };
-      setListings((prev) => [newItem, ...prev]);
-    }
-
-    setEditingId(null);
-    setFormData({
-      title: "",
-      category: "Food for Sale",
-      location: "",
-      price: "",
-      description: "",
-      whatsapp: "",
-      quantity: "",
-      itemsAvailable: "",
-      imageName: "",
-      imagePreview: "",
-    });
-    setActiveTab("marketplace");
-  };
-
-  const editPost = (item) => {
-    setEditingId(item.id);
-    setFormData({
-      title: item.title,
-      category: item.category,
-      location: item.location,
-      price: item.price,
-      description: item.description,
-      whatsapp: item.whatsapp,
-      quantity: String(item.quantity),
-      itemsAvailable: item.itemsAvailable,
-      imageName: item.imageName || "",
-      imagePreview: item.imagePreview || "",
-    });
-    setActiveTab("post");
-  };
-
-  const bookTalent = (item) => {
-    setBookingItem(item);
-    setBookingMessage("");
-    setBookingData({
-      date: "",
-      time: "",
-      notes: "",
-    });
-  };
-
-  const submitBooking = () => {
-    if (!bookingData.date || !bookingData.time) return;
-    setBookingMessage("Booking request captured. Next we can connect this to a real calendar backend.");
-  };
-
-  const handleMedUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setMedForm((prev) => ({ ...prev, prescriptionName: file.name }));
-    }
-  };
-
-  const submitMedSupport = (e) => {
-    e.preventDefault();
-    setMedSubmitted(true);
-  };
-
-  const ads = [
-    { title: "Featured Vendor", text: "Promote your products to the naborhood." },
-    { title: "Featured Talent", text: "Book trusted local help faster." },
-    { title: "Sponsored Event", text: "Bring more people to your event." },
-  ];
-
+function CardDetailModal({ card, onClose, onReserve, market }) {
+  if (!card) return null;
   return (
-    <div className="app-shell">
-      <header className="topbar">
-        <div className="brand-stack">
-          <div className="brand-mark">Naborly</div>
-          <div className="welcome-inline">Welcome to Naborly JA</div>
-          <div className="brand-sub">
-            Neighbors helping neighbors, selling to neighbors.
-          </div>
-        </div>
-
-        <div className="topbar-actions">
-          <select
-            className="location-select"
-            value={selectedMarket}
-            onChange={(e) => setSelectedMarket(e.target.value)}
-          >
-            {MARKETS.map((location) => (
-              <option key={location} value={location}>
-                {location}
-              </option>
-            ))}
-          </select>
-
-          <button
-            className="outline-btn"
-            onClick={() => {
-              if (user) {
-                setActiveTab("account");
-              } else {
-                setAuthMode("signin");
-                setShowAuthModal(true);
-              }
-            }}
-          >
-            {user ? "Account" : "Sign In"}
-          </button>
-
-          <button
-            className="solid-btn"
-            onClick={() => {
-              if (user) {
-                setActiveTab("account");
-              } else {
-                setAuthMode("signup");
-                setShowAuthModal(true);
-              }
-            }}
-          >
-            {user ? "My Account" : "Sign Up"}
-          </button>
-        </div>
-      </header>
-
-      <section className="hero jamaica-hero">
-        <div className="hero-overlay" />
-        <div className="hero-content">
-          <h1>
-            Food, support, local talent, events in the naborhood, restaurant donations,
-            community giving, and direct vendor connection.
-          </h1>
-          <p>
-            A premium neighborhood ecosystem built for everyday life, opportunity,
-            care, and growth.
-          </p>
-          <WaveHello />
-
-          <div className="hero-buttons">
-            <button className="solid-btn" onClick={() => setActiveTab("marketplace")}>
-              Explore Marketplace
-            </button>
-            <button className="outline-light-btn" onClick={() => setActiveTab("support")}>
-              Food & Support
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <nav className="main-tabs">
-        <button
-          className={activeTab === "home" ? "tab active" : "tab"}
-          onClick={() => setActiveTab("home")}
-        >
-          Home
-        </button>
-        <button
-          className={activeTab === "marketplace" ? "tab active" : "tab"}
-          onClick={() => setActiveTab("marketplace")}
-        >
-          Marketplace
-        </button>
-        <button
-          className={activeTab === "support" ? "tab active" : "tab"}
-          onClick={() => setActiveTab("support")}
-        >
-          Food & Support
-        </button>
-        <button
-          className={activeTab === "post" ? "tab active" : "tab"}
-          onClick={() => setActiveTab("post")}
-        >
-          Post to Naborhood
-        </button>
-        <button
-          className={activeTab === "partners" ? "tab active" : "tab"}
-          onClick={() => setActiveTab("partners")}
-        >
-          Partners & Ads
-        </button>
-        <button
-          className={activeTab === "saved" ? "tab active" : "tab"}
-          onClick={() => setActiveTab("saved")}
-        >
-          Saved & Followed
-        </button>
-        <button
-          className={activeTab === "account" ? "tab active" : "tab"}
-          onClick={() => setActiveTab("account")}
-        >
-          Account
-        </button>
-      </nav>
-
-      <main className="main-content">
-        {showSignup && (
-          <section className="signup-banner signup-banner-slim">
+    <AnimatePresence>
+      <motion.div className='fixed inset-0 z-50 bg-black/55 p-4 md:p-8 flex items-end md:items-center justify-center overflow-y-auto' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <motion.div initial={{ y: 20, opacity: 0, scale: 0.98 }} animate={{ y: 0, opacity: 1, scale: 1 }} exit={{ y: 20, opacity: 0, scale: 0.98 }} className='w-full max-w-4xl rounded-[30px] bg-white shadow-2xl overflow-hidden max-h-[92vh] flex flex-col'>
+          <div className='p-5 md:p-7 border-b flex items-start justify-between gap-4'>
             <div>
-              <h3>Join Naborly JA</h3>
-              <p>
-                Create your free account, share to WhatsApp and social, and grow your
-                neighborhood ecosystem.
-              </p>
+              <div className='inline-flex px-3 py-1 rounded-full bg-amber-100 text-xs font-bold'>{card.type}</div>
+              <h3 className='text-2xl md:text-3xl font-black mt-3'>{card.title}</h3>
+              <div className='mt-2 flex items-center gap-2 text-sm text-zinc-600'><MapPin className='w-4 h-4' />{card.loc}</div>
             </div>
-            <div className="signup-actions">
-              <button
-                className="solid-btn"
-                onClick={() => {
-                  setAuthMode("signup");
-                  setShowAuthModal(true);
-                  setActiveTab("account");
-                }}
-              >
-                Create Free Account
-              </button>
-              <button className="ghost-btn" onClick={() => setShowSignup(false)}>
-                Dismiss
-              </button>
-            </div>
-          </section>
-        )}
-
-        {activeTab === "home" && (
-          <>
-            <section className="stats-grid">
-              <div className="stat-card">
-                <strong>{stats.activeListings}</strong>
-                <span>Active Listings</span>
-              </div>
-              <div className="stat-card">
-                <strong>{stats.talentCount}</strong>
-                <span>Local Talent</span>
-              </div>
-              <div className="stat-card">
-                <strong>{stats.eventCount}</strong>
-                <span>Events Nearby</span>
-              </div>
-              <div className="stat-card">
-                <strong>{stats.donationCount}</strong>
-                <span>Donations & Giveaways</span>
-              </div>
-              <div className="stat-card">
-                <strong>{savedIds.length}</strong>
-                <span>Saved & Followed</span>
-              </div>
-              <div className="stat-card">
-                <strong>{naborPoints}</strong>
-                <span>Nabor Points</span>
-              </div>
-            </section>
-
-            <section className="quick-action-grid">
-              <button className="action-card" onClick={() => setActiveTab("support")}>
-                <strong>Food Support</strong>
-                <span>Emergency help, giveaways, restaurant donations, and community support.</span>
-              </button>
-              <button
-                className="action-card"
-                onClick={() => {
-                  setActiveTab("marketplace");
-                  setSelectedCategory("Local Talent / Services");
-                }}
-              >
-                <strong>Hire Local Talent</strong>
-                <span>Book trusted neighborhood talent and service providers.</span>
-              </button>
-              <button
-                className="action-card"
-                onClick={() => {
-                  setActiveTab("marketplace");
-                  setSelectedCategory("Events in the Naborhood");
-                }}
-              >
-                <strong>Events in the Naborhood</strong>
-                <span>Find what is happening nearby and promote your next event.</span>
-              </button>
-              <button className="action-card" onClick={() => setActiveTab("post")}>
-                <strong>Post to Naborhood</strong>
-                <span>Sell, donate, promote, request help, or share a service.</span>
-              </button>
-            </section>
-
-            <section className="quick-links">
-              <a
-                className="quick-link"
-                href={whatsappLink("", "Naborly JA")}
-                target="_blank"
-                rel="noreferrer"
-              >
-                WhatsApp
-              </a>
-              <button className="quick-link" onClick={() => setActiveTab("support")}>
-                Med Support
-              </button>
-              <button className="quick-link" onClick={() => setActiveTab("partners")}>
-                Restaurant Donations
-              </button>
-              <button className="quick-link" onClick={() => setActiveTab("partners")}>
-                Community Donations
-              </button>
-              <button className="quick-link" onClick={() => setActiveTab("account")}>
-                Share & Earn
-              </button>
-            </section>
-
-            <section className="section-card">
-              <div className="section-header">
-                <h2>Featured in {selectedMarket}</h2>
-                <button className="text-btn" onClick={() => setActiveTab("marketplace")}>
-                  See all
-                </button>
-              </div>
-
-              <div className="listing-grid">
-                {featuredListings.map((item) => (
-                  <article key={item.id} className="listing-card">
-                    <div className="listing-topline">
-                      <span className="pill">{item.category}</span>
-                      <span className="micro-badge">{item.badge}</span>
-                    </div>
-                    <h3>{item.title}</h3>
-                    <p>{item.description}</p>
-                    <div className="listing-meta">
-                      <span>{item.location}</span>
-                      <span>{item.price}</span>
-                    </div>
-                    <div className="listing-qty">What’s available: {item.itemsAvailable}</div>
-                    <div className="listing-qty">{listingStatus(item)}</div>
-
-                    <div className="card-actions">
-                      <button className="mini-btn" onClick={() => toggleSave(item.id)}>
-                        {savedIds.includes(item.id) ? "Saved" : "Save"}
-                      </button>
-                      <a
-                        className="mini-btn linkish"
-                        href={whatsappLink(item.whatsapp, item.title)}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        WhatsApp
-                      </a>
-                      {item.category === "Local Talent / Services" ? (
-                        <button className="mini-btn" onClick={() => bookTalent(item)}>
-                          Book
-                        </button>
-                      ) : (
-                        <button
-                          className="mini-btn"
-                          onClick={() =>
-                            alert("Payment flow placeholder. Next we can connect real payments.")
-                          }
-                        >
-                          Pay / Reserve
-                        </button>
-                      )}
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
-          </>
-        )}
-
-        {activeTab === "marketplace" && (
-          <>
-            <section className="filters-bar">
-              <input
-                className="search-input"
-                type="text"
-                placeholder="Search food, donations, events, talent, support..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-
-              <select
-                className="category-select"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
-                {FILTER_CATEGORIES.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-            </section>
-
-            <section className="listing-grid">
-              {filteredListings.map((item) => (
-                <article
-                  key={item.id}
-                  className={`listing-card ${qtyLeft(item) <= 0 ? "sold-out" : ""}`}
-                >
-                  <div className="listing-topline">
-                    <span className="pill">{item.category}</span>
-                    <span className="micro-badge">{item.badge}</span>
-                  </div>
-                  <h3>{item.title}</h3>
-                  <p>{item.description}</p>
-                  <div className="listing-meta">
-                    <span>{item.location}</span>
-                    <span>{item.price}</span>
-                  </div>
-                  <div className="listing-qty">What’s available: {item.itemsAvailable}</div>
-                  <div className="listing-qty">Quantity: {item.quantity}</div>
-                  <div className="listing-qty">{listingStatus(item)}</div>
-
-                  <div className="listing-note">
-                    Payment options and full product details appear after you open Pay / Reserve or Book Talent.
-                  </div>
-
-                  <div className="card-actions">
-                    <button className="mini-btn" onClick={() => toggleSave(item.id)}>
-                      {savedIds.includes(item.id) ? "Saved" : "Save"}
-                    </button>
-
-                    <a
-                      className="mini-btn linkish"
-                      href={whatsappLink(item.whatsapp, item.title)}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      WhatsApp Vendor
-                    </a>
-
-                    {item.category === "Local Talent / Services" ? (
-                      <button className="mini-btn" onClick={() => bookTalent(item)}>
-                        Book Talent
-                      </button>
-                    ) : (
-                      <button
-                        className="mini-btn"
-                        onClick={() =>
-                          alert("Payment/reserve flow placeholder. Next we can connect real payments.")
-                        }
-                      >
-                        Pay / Reserve
-                      </button>
-                    )}
-
-                    {item.ownPost ? (
-                      <button className="mini-btn" onClick={() => editPost(item)}>
-                        Edit Post
-                      </button>
-                    ) : null}
-                  </div>
-                </article>
-              ))}
-            </section>
-          </>
-        )}
-
-        {activeTab === "support" && (
-          <>
-            <section className="section-card">
-              <div className="section-header">
-                <h2>Food & Support</h2>
-              </div>
-              <div className="listing-grid">
-                {supportListings.map((item) => (
-                  <article
-                    key={item.id}
-                    className={`listing-card ${qtyLeft(item) <= 0 ? "sold-out" : ""}`}
-                  >
-                    <div className="listing-topline">
-                      <span className="pill">{item.category}</span>
-                      <span className="micro-badge">{item.badge}</span>
-                    </div>
-                    <h3>{item.title}</h3>
-                    <p>{item.description}</p>
-                    <div className="listing-meta">
-                      <span>{item.location}</span>
-                      <span>{item.price}</span>
-                    </div>
-                    <div className="listing-qty">What’s available: {item.itemsAvailable}</div>
-                    <div className="listing-qty">{listingStatus(item)}</div>
-                    <div className="card-actions">
-                      <a
-                        className="mini-btn linkish"
-                        href={whatsappLink(item.whatsapp, item.title)}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        WhatsApp Support
-                      </a>
-                      <button className="mini-btn">Learn More</button>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            </section>
-
-            <section className="two-col">
-              <div className="section-card">
-                <h2>Food & Support</h2>
-                <p>
-                  Find restaurant donations, giveaways, community donations, and neighborhood support.
-                </p>
-                <ul className="support-list">
-                  <li>Restaurant food donations</li>
-                  <li>Community giveaways</li>
-                  <li>Church and partner support</li>
-                  <li>Help requests</li>
-                  <li>Direct WhatsApp coordination</li>
-                </ul>
-                <a
-                  className="solid-btn inline-btn"
-                  href={whatsappLink("", "Food Support")}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Ask for Help on WhatsApp
-                </a>
-              </div>
-
-              <div className="section-card">
-                <h2>Med Support</h2>
-                <p>
-                  Upload prescription details, choose payment or pickup, and coordinate by WhatsApp.
-                </p>
-
-                <form className="post-form" onSubmit={submitMedSupport}>
-                  <input
-                    className="search-input"
-                    placeholder="Patient name"
-                    value={medForm.patientName}
-                    onChange={(e) =>
-                      setMedForm((prev) => ({ ...prev, patientName: e.target.value }))
-                    }
-                  />
-                  <input
-                    className="search-input"
-                    placeholder="Medication needed"
-                    value={medForm.medicationNeed}
-                    onChange={(e) =>
-                      setMedForm((prev) => ({ ...prev, medicationNeed: e.target.value }))
-                    }
-                  />
-                  <input
-                    className="search-input"
-                    placeholder="WhatsApp number"
-                    value={medForm.whatsapp}
-                    onChange={(e) =>
-                      setMedForm((prev) => ({ ...prev, whatsapp: e.target.value }))
-                    }
-                  />
-                  <select
-                    className="category-select"
-                    value={medForm.pickupMode}
-                    onChange={(e) =>
-                      setMedForm((prev) => ({ ...prev, pickupMode: e.target.value }))
-                    }
-                  >
-                    <option>Pickup</option>
-                    <option>Payment + Delivery</option>
-                  </select>
-                  <select
-                    className="category-select"
-                    value={medForm.paymentOption}
-                    onChange={(e) =>
-                      setMedForm((prev) => ({ ...prev, paymentOption: e.target.value }))
-                    }
-                  >
-                    {PAYMENT_OPTIONS.map((option) => (
-                      <option key={option}>{option}</option>
-                    ))}
-                  </select>
-                  <label className="upload-box upload-left">
-                    <strong>Prescription Upload</strong>
-                    <small>{medForm.prescriptionName || "Attach prescription image or file"}</small>
-                    <input type="file" className="hidden-input" onChange={handleMedUpload} />
-                  </label>
-                  <textarea
-                    className="text-area"
-                    rows="4"
-                    placeholder="Notes"
-                    value={medForm.notes}
-                    onChange={(e) =>
-                      setMedForm((prev) => ({ ...prev, notes: e.target.value }))
-                    }
-                  />
-                  <div className="info-box">
-                    <strong>Pickup note</strong>
-                    <p>
-                      If a family member or helper is picking up medication, the prescription
-                      should be presented at pickup.
-                    </p>
-                  </div>
-                  <div className="card-actions">
-                    <button className="solid-btn" type="submit">
-                      Submit Med Support
-                    </button>
-                    <a
-                      className="mini-btn linkish"
-                      href={whatsappLink(medForm.whatsapp, "Medication Support")}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      WhatsApp Support
-                    </a>
-                  </div>
-                </form>
-
-                {medSubmitted ? (
-                  <p className="subscribe-note">Med Support request captured.</p>
-                ) : null}
-              </div>
-            </section>
-          </>
-        )}
-
-        {activeTab === "post" && (
-          <section className="section-card narrow">
-            <h2>{editingId ? "Edit Post to Naborhood" : "Post to Naborhood"}</h2>
-            <p>
-              Sell, donate, promote, share a service, post an event, or request help.
-            </p>
-
-            <form className="post-form" onSubmit={submitPost}>
-              <input
-                name="title"
-                value={formData.title}
-                onChange={handleFormChange}
-                className="search-input"
-                placeholder="Post title"
-                required
-              />
-
-              <select
-                name="category"
-                value={formData.category}
-                onChange={handleFormChange}
-                className="category-select"
-              >
-                {POST_CATEGORIES.map((category) => (
-                  <option key={category} value={category}>
-                    {category}
-                  </option>
-                ))}
-              </select>
-
-              <input
-                name="location"
-                value={formData.location}
-                onChange={handleFormChange}
-                className="search-input"
-                placeholder="Neighborhood / location"
-                required
-              />
-
-              <input
-                name="price"
-                value={formData.price}
-                onChange={handleFormChange}
-                className="search-input"
-                placeholder="Price or Free"
-              />
-
-              <input
-                name="quantity"
-                value={formData.quantity}
-                onChange={handleFormChange}
-                className="search-input"
-                placeholder="Quantity available"
-              />
-
-              <input
-                name="itemsAvailable"
-                value={formData.itemsAvailable}
-                onChange={handleFormChange}
-                className="search-input"
-                placeholder="What’s available if more than one"
-              />
-
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleFormChange}
-                className="text-area"
-                placeholder="Describe your post"
-                rows="5"
-                required
-              />
-
-              <input
-                name="whatsapp"
-                value={formData.whatsapp}
-                onChange={handleFormChange}
-                className="search-input"
-                placeholder="WhatsApp number"
-              />
-
-              <label className="upload-box upload-left">
-                <strong>Upload Image</strong>
-                <small>{formData.imageName || "Choose a product or service image"}</small>
-                <input
-                  type="file"
-                  className="hidden-input"
-                  accept="image/*"
-                  onChange={handlePostUpload}
-                />
-              </label>
-
-              {formData.imagePreview ? (
-                <div className="image-preview-wrap">
-                  <img src={formData.imagePreview} alt="Preview" className="image-preview" />
-                </div>
-              ) : null}
-
-              <div className="card-actions">
-                <button type="submit" className="solid-btn">
-                  {editingId ? "Save Changes" : "Post to Naborhood"}
-                </button>
-                {editingId ? (
-                  <button
-                    type="button"
-                    className="mini-btn"
-                    onClick={() => {
-                      setEditingId(null);
-                      setFormData({
-                        title: "",
-                        category: "Food for Sale",
-                        location: "",
-                        price: "",
-                        description: "",
-                        whatsapp: "",
-                        quantity: "",
-                        itemsAvailable: "",
-                        imageName: "",
-                        imagePreview: "",
-                      });
-                    }}
-                  >
-                    Cancel Edit
-                  </button>
-                ) : null}
-              </div>
-            </form>
-          </section>
-        )}
-
-        {activeTab === "partners" && (
-          <section className="two-col">
-            <div className="section-card">
-              <h2>Partners & Ads</h2>
-              <p>
-                Restaurants, churches, vendors, events, talent, and neighborhood businesses can
-                grow through Naborly.
-              </p>
-              <div className="partner-grid">
-                <div className="partner-box">Restaurant Donations</div>
-                <div className="partner-box">Community Donations</div>
-                <div className="partner-box">Featured Vendors</div>
-                <div className="partner-box">Promoted Events</div>
-              </div>
-              <div className="partner-plan-grid">
-                <div className="partner-plan">
-                  <strong>Starter Partner</strong>
-                  <span>Free</span>
-                  <p>Basic presence and community visibility.</p>
-                </div>
-                <div className="partner-plan">
-                  <strong>Featured Seller</strong>
-                  <span>JMD 3,000 / month</span>
-                  <p>Featured placement for products and services.</p>
-                </div>
-                <div className="partner-plan">
-                  <strong>Business Pro</strong>
-                  <span>JMD 10,000 / month</span>
-                  <p>Homepage exposure, promoted listings, and better reach.</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="section-card">
-              <h2>Sponsored Spaces</h2>
-              <div className="ads-grid">
-                {ads.map((ad) => (
-                  <div className="ad-card" key={ad.title}>
-                    <strong>{ad.title}</strong>
-                    <p>{ad.text}</p>
-                    <button
-                      className="mini-btn"
-                      onClick={() => setActiveTab("partners")}
-                    >
-                      Promote
-                    </button>
-                  </div>
-                ))}
-              </div>
-              <div className="subscribe-box">
-                <input
-                  type="text"
-                  className="search-input"
-                  placeholder="Enter your email"
-                  value={subscribeEmail}
-                  onChange={(e) => setSubscribeEmail(e.target.value)}
-                />
-                <button className="solid-btn" onClick={handleSubscribe}>
-                  Subscribe
-                </button>
-              </div>
-              {subscribeMessage ? <p className="subscribe-note">{subscribeMessage}</p> : null}
-            </div>
-          </section>
-        )}
-
-        {activeTab === "saved" && (
-          <section className="section-card">
-            <h2>Saved & Followed</h2>
-            <div className="listing-grid">
-              {savedListings.length ? (
-                savedListings.map((item) => (
-                  <article key={item.id} className="listing-card">
-                    <div className="listing-topline">
-                      <span className="pill">{item.category}</span>
-                      <span className="micro-badge">{item.badge}</span>
-                    </div>
-                    <h3>{item.title}</h3>
-                    <p>{item.description}</p>
-                    <div className="listing-meta">
-                      <span>{item.location}</span>
-                      <span>{item.price}</span>
-                    </div>
-                    <div className="listing-qty">{listingStatus(item)}</div>
-                  </article>
-                ))
-              ) : (
-                <p>No saved posts yet.</p>
-              )}
-            </div>
-          </section>
-        )}
-
-        {activeTab === "account" && (
-          <section className="two-col">
-            <div className="section-card">
-              <h2>Account</h2>
-              <div className="account-box">
-                <div className="account-line">
-                  <strong>Profile:</strong>{" "}
-                  {user?.user_metadata?.full_name || user?.email || "Community Member"}
-                </div>
-                <div className="account-line"><strong>Market:</strong> {selectedMarket}</div>
-                <div className="account-line"><strong>Nabor Points:</strong> {naborPoints}</div>
-                <div className="account-line"><strong>My Posts:</strong> {myPosts.length}</div>
-              </div>
-
-              <div className="card-actions">
-                {user ? (
-                  <button className="mini-btn" onClick={handleSignOut}>
-                    Sign Out
-                  </button>
-                ) : (
-                  <>
-                    <button
-                      className="mini-btn"
-                      onClick={() => {
-                        setAuthMode("signin");
-                        setShowAuthModal(true);
-                      }}
-                    >
-                      Sign In
-                    </button>
-                    <button
-                      className="mini-btn"
-                      onClick={() => {
-                        setAuthMode("signup");
-                        setShowAuthModal(true);
-                      }}
-                    >
-                      Create Free Account
-                    </button>
-                  </>
-                )}
-              </div>
-
-              <div className="section-card inner-card">
-                <h3>Share & Earn</h3>
-                <p>Share Naborly by QR, WhatsApp, or social and earn Nabor Points.</p>
-                <div className="qr-box">
-                  <img src={qrCodeUrl(APP_URL)} alt="Naborly QR" className="qr-image" />
-                </div>
-                <div className="card-actions">
-                  <a
-                    className="mini-btn linkish"
-                    href={`https://wa.me/?text=${encodeURIComponent(`${SHARE_TEXT} ${APP_URL}`)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Share on WhatsApp
-                  </a>
-                  <a
-                    className="mini-btn linkish"
-                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(APP_URL)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Share to Social
-                  </a>
-                  <button className="mini-btn" onClick={copyShareLink}>
-                    {shareCopied ? "Copied" : "Copy Link"}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="section-card">
-              <h2>Tracking & Stats</h2>
-              <div className="promise-grid">
-                <div className="info-box">
-                  <strong>Active Listings</strong>
-                  <p>{stats.activeListings}</p>
-                </div>
-                <div className="info-box">
-                  <strong>WhatsApp-Ready Posts</strong>
-                  <p>{listings.filter((item) => item.whatsapp).length}</p>
-                </div>
-                <div className="info-box">
-                  <strong>Saved & Followed</strong>
-                  <p>{savedIds.length}</p>
-                </div>
-                <div className="info-box">
-                  <strong>My Editable Posts</strong>
-                  <p>{myPosts.length}</p>
-                </div>
-              </div>
-            </div>
-          </section>
-        )}
-      </main>
-
-      {showAuthModal ? (
-        <div className="modal-backdrop">
-          <div className="modal-card">
-            <div className="modal-head">
-              <h3>{authMode === "signup" ? "Create Free Account" : "Sign In"}</h3>
-              <button className="mini-btn" onClick={() => setShowAuthModal(false)}>
-                Close
-              </button>
-            </div>
-
-            <form
-              className="post-form"
-              onSubmit={authMode === "signup" ? handleSignUp : handleSignIn}
-            >
-              {authMode === "signup" ? (
-                <>
-                  <input
-                    className="search-input"
-                    name="fullName"
-                    placeholder="Full name"
-                    value={authForm.fullName}
-                    onChange={handleAuthChange}
-                  />
-                  <input
-                    className="search-input"
-                    name="whatsapp"
-                    placeholder="WhatsApp number"
-                    value={authForm.whatsapp}
-                    onChange={handleAuthChange}
-                  />
-                </>
-              ) : null}
-
-              <input
-                className="search-input"
-                name="email"
-                type="email"
-                placeholder="Email"
-                value={authForm.email}
-                onChange={handleAuthChange}
-              />
-
-              <input
-                className="search-input"
-                name="password"
-                type="password"
-                placeholder="Password"
-                value={authForm.password}
-                onChange={handleAuthChange}
-              />
-
-              <button className="solid-btn" type="submit">
-                {authMode === "signup" ? "Create Account" : "Sign In"}
-              </button>
-
-              <button
-                type="button"
-                className="mini-btn"
-                onClick={() =>
-                  setAuthMode((prev) => (prev === "signup" ? "signin" : "signup"))
-                }
-              >
-                {authMode === "signup"
-                  ? "Already have an account? Sign In"
-                  : "Need an account? Sign Up"}
-              </button>
-
-              {authMessage ? <p className="subscribe-note">{authMessage}</p> : null}
-            </form>
+            <button onClick={onClose} className='rounded-xl border p-2 hover:bg-zinc-50'><X className='w-5 h-5' /></button>
           </div>
-        </div>
-      ) : null}
-
-      {bookingItem ? (
-        <div className="modal-backdrop">
-          <div className="modal-card">
-            <div className="modal-head">
-              <h3>Book Talent Appointment</h3>
-              <button className="mini-btn" onClick={() => setBookingItem(null)}>
-                Close
-              </button>
-            </div>
-            <p className="modal-sub">
-              {bookingItem.title} · {bookingItem.location}
-            </p>
-            <div className="post-form">
-              <input
-                className="search-input"
-                type="date"
-                value={bookingData.date}
-                onChange={(e) => setBookingData((prev) => ({ ...prev, date: e.target.value }))}
-              />
-              <input
-                className="search-input"
-                type="time"
-                value={bookingData.time}
-                onChange={(e) => setBookingData((prev) => ({ ...prev, time: e.target.value }))}
-              />
-              <textarea
-                className="text-area"
-                rows="3"
-                placeholder="Notes"
-                value={bookingData.notes}
-                onChange={(e) => setBookingData((prev) => ({ ...prev, notes: e.target.value }))}
-              />
-              <div className="card-actions">
-                <button className="solid-btn" onClick={submitBooking}>
-                  Confirm Booking
-                </button>
-                <a
-                  className="mini-btn linkish"
-                  href={whatsappLink(bookingItem.whatsapp, bookingItem.title)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  WhatsApp Talent
-                </a>
+          <div className='grid lg:grid-cols-[1.1fr_.9fr] overflow-y-auto'>
+            <div className='p-5 md:p-7 border-b lg:border-b-0 lg:border-r'>
+              <div className='text-lg font-bold'>{card.price}</div>
+              <div className='mt-2 text-green-700 font-semibold'>Quantity left: {card.qtyLeft} of {card.qtyTotal}</div>
+              <p className='mt-4 text-zinc-700 leading-7'>{card.desc}</p>
+              <div className='mt-5 rounded-2xl bg-amber-50 p-4 border'>
+                <div className='font-semibold'>Vendor / Host</div>
+                <div className='text-zinc-700'>{card.vendor}</div>
+                <div className='mt-3 flex items-center gap-2 text-sm text-zinc-600'>{statusIcon(card.tracking)}<span>{card.tracking}</span></div>
               </div>
-              {bookingMessage ? <p className="subscribe-note">{bookingMessage}</p> : null}
+              <div className='mt-5 flex flex-wrap gap-3'>
+                <a href={safeWhatsapp(card.whatsapp, card.title)} target='_blank' rel='noreferrer' className='px-4 py-3 rounded-2xl border flex items-center gap-2 hover:bg-zinc-50'><MessageCircle className='w-4 h-4' />WhatsApp</a>
+                <a href={`tel:${card.whatsapp}`} className='px-4 py-3 rounded-2xl border flex items-center gap-2 hover:bg-zinc-50'><Phone className='w-4 h-4' />Call</a>
+              </div>
+            </div>
+            <div className='p-5 md:p-7 bg-zinc-50'>
+              <h4 className='text-xl font-black'>Reserve / Pay</h4>
+              <div className='mt-2 text-xs text-zinc-500'>Secure checkout enabled • {getPaymentOptions(market).join(' / ')} • Currency: {getCurrency(market)}</div>
+              <p className='text-sm text-zinc-600 mt-2'>Use the intake below to reserve, book, or pay.</p>
+              <div className='mt-4 space-y-3'>
+                <input className='w-full rounded-2xl border p-3' placeholder='Full name' />
+                <input className='w-full rounded-2xl border p-3' placeholder='WhatsApp number' />
+                <textarea className='w-full rounded-2xl border p-3 min-h-[100px]' placeholder='Notes or request details' />
+                {!card.free ? <div className='grid grid-cols-2 gap-2'>{getPaymentOptions(market).map((pay) => <button key={pay} className='rounded-2xl border p-3 flex items-center justify-center gap-2 bg-white text-sm'>{pay.includes('Card') && <CreditCard className='w-4 h-4' />}{(pay.includes('Wallet') || pay.includes('Pay') || pay.includes('WiPay')) && <Wallet className='w-4 h-4' />}{pay.includes('Pickup') && <Store className='w-4 h-4' />}<span>{pay}</span></button>)}</div> : <div className='rounded-2xl border border-dashed bg-white p-4 text-sm text-zinc-600'>This item is free. Payment is not needed. Continue to reserve or arrange pickup.</div>}
+                <button onClick={() => onReserve(card)} className='w-full rounded-2xl bg-green-700 text-white px-4 py-3 font-bold hover:bg-green-800'>{card.type === 'Talent' ? 'Book Talent' : card.free ? 'Reserve Free Item' : 'Secure Checkout'}</button>
+              </div>
             </div>
           </div>
-        </div>
-      ) : null}
-    </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }
 
-export default App;
+function SignupModal({ open, onClose, market }) {
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [parish, setParish] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  if (!open) return null;
+
+  const handleSignup = async () => {
+    if (!supabase) { setMessage('Supabase not connected yet. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to enable live signup.'); return; }
+    try {
+      setSaving(true); setMessage('');
+      const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: fullName, whatsapp, market, parish } } });
+      if (error) throw error;
+      const userId = data.user?.id;
+      if (userId) { await supabase.from('profiles').upsert({ id: userId, full_name: fullName, email, whatsapp, market, parish }); }
+      setMessage('Account created. Check your email or sign in if confirmations are disabled.');
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Signup failed.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      <motion.div className='fixed inset-0 z-50 bg-black/55 p-4 flex items-center justify-center overflow-y-auto' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} exit={{ y: 20, opacity: 0 }} className='w-full max-w-lg rounded-[30px] bg-white p-6 md:p-7 shadow-2xl max-h-[92vh] overflow-y-auto'>
+          <div className='flex justify-between items-start gap-4'>
+            <div><h3 className='text-2xl font-black'>Create Free Account</h3><p className='text-zinc-600 mt-2'>Join {APP_NAME} to post, favorite, reserve, track, and grow your naborhood.</p></div>
+            <button onClick={onClose} className='rounded-xl border p-2 hover:bg-zinc-50'><X className='w-5 h-5' /></button>
+          </div>
+          <div className='mt-5 grid gap-3'>
+            <input value={fullName} onChange={(e) => setFullName(e.target.value)} className='w-full rounded-2xl border p-3' placeholder='Full name' />
+            <input value={email} onChange={(e) => setEmail(e.target.value)} className='w-full rounded-2xl border p-3' placeholder='Email' />
+            <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className='w-full rounded-2xl border p-3' placeholder='WhatsApp number' />
+            <select value={parish} onChange={(e) => setParish(e.target.value)} className='w-full rounded-2xl border p-3'>
+              <option value=''>Select your parish / location</option>
+              {(PARISH_MAP[market] || []).map((p) => <option key={p}>{p}</option>)}
+            </select>
+            <input type='password' value={password} onChange={(e) => setPassword(e.target.value)} className='w-full rounded-2xl border p-3' placeholder='Create password' />
+            <div className='rounded-2xl border border-dashed bg-amber-50 p-4 text-sm text-zinc-700'>Basic signup is free. Payment appears only for premium seller, ad, partner, or boosted marketplace upgrades.</div>
+            {message ? <div className='rounded-2xl border p-3 text-sm text-zinc-700'>{message}</div> : null}
+            <button onClick={handleSignup} disabled={saving} className='w-full rounded-2xl bg-green-700 text-white py-3 font-bold hover:bg-green-800 disabled:opacity-60'>{saving ? 'Creating Account…' : 'Create Free Account'}</button>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+function KpiCard({ title, value }) {
+  return <div className='bg-white rounded-[24px] p-5 border shadow-sm hover:shadow-md transition-shadow'><div className='text-2xl md:text-3xl font-black'>{value}</div><div className='text-sm text-zinc-600 mt-1'>{title}</div></div>;
+}
+
+export default function OriginalNaborly() { return <div className='min-h-screen bg-gradient-to-b from-amber-50 to-stone-100 text-zinc-900'><div className='p-10 text-center text-zinc-700'>Use the full App.jsx from the launch kit zip. This placeholder exists only if copy/paste truncates here.</div></div>; }
