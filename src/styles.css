@@ -667,3 +667,26 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+.signup-banner-slim {
+  padding: 18px 22px;
+  align-items: center;
+}
+
+.image-preview-wrap {
+  margin-top: 8px;
+}
+
+.image-preview {
+  width: 100%;
+  max-width: 240px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.listing-note {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
