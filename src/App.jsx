@@ -202,17 +202,19 @@ function App() {
   const [subscribeMessage, setSubscribeMessage] = useState("");
   const [listings, setListings] = useState(STARTER_LISTINGS);
   const [editingId, setEditingId] = useState(null);
-const [user, setUser] = useState(null);
-const [showAuthModal, setShowAuthModal] = useState(false);
-const [authMode, setAuthMode] = useState("signin");
-const [authMessage, setAuthMessage] = useState("");
 
-const [authForm, setAuthForm] = useState({
-  fullName: "",
-  whatsapp: "",
-  email: "",
-  password: "",
-});
+  const [user, setUser] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState("signin");
+  const [authMessage, setAuthMessage] = useState("");
+
+  const [authForm, setAuthForm] = useState({
+    fullName: "",
+    whatsapp: "",
+    email: "",
+    password: "",
+  });
+
   const [formData, setFormData] = useState({
     title: "",
     category: "Food for Sale",
@@ -222,6 +224,8 @@ const [authForm, setAuthForm] = useState({
     whatsapp: "",
     quantity: "",
     itemsAvailable: "",
+    imageName: "",
+    imagePreview: "",
   });
 
   const [bookingData, setBookingData] = useState({
@@ -239,19 +243,21 @@ const [authForm, setAuthForm] = useState({
     notes: "",
     prescriptionName: "",
   });
-useEffect(() => {
-  supabase.auth.getUser().then(({ data }) => {
-    setUser(data.user || null);
-  });
 
-  const {
-    data: { subscription },
-  } = supabase.auth.onAuthStateChange((_event, session) => {
-    setUser(session?.user || null);
-  });
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user || null);
+    });
 
-  return () => subscription.unsubscribe();
-}, []);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const stats = useMemo(() => {
     const activeListings = listings.filter((item) => qtyLeft(item) > 0).length;
     const talentCount = listings.filter(
@@ -264,8 +270,10 @@ useEffect(() => {
       (item) =>
         item.category === "Restaurant Donations" ||
         item.category === "Community Donations" ||
-        item.category === "Giveaways"
+        item.category === "Giveaways" ||
+        item.category === "Help Request"
     ).length;
+
     return { activeListings, talentCount, eventCount, donationCount };
   }, [listings]);
 
@@ -284,6 +292,16 @@ useEffect(() => {
       return categoryOk && searchOk;
     });
   }, [listings, selectedCategory, searchTerm]);
+
+  const supportListings = useMemo(() => {
+    return listings.filter(
+      (item) =>
+        item.category === "Giveaways" ||
+        item.category === "Restaurant Donations" ||
+        item.category === "Community Donations" ||
+        item.category === "Help Request"
+    );
+  }, [listings]);
 
   const featuredListings = listings.filter((item) => item.featured).slice(0, 4);
   const savedListings = listings.filter((item) => savedIds.includes(item.id));
@@ -310,65 +328,84 @@ useEffect(() => {
     setSubscribeMessage("You are subscribed to Naborly updates.");
     setSubscribeEmail("");
   };
-const handleAuthChange = (e) => {
-  const { name, value } = e.target;
-  setAuthForm((prev) => ({ ...prev, [name]: value }));
-};
 
-const handleSignUp = async (e) => {
-  e.preventDefault();
-  setAuthMessage("");
+  const handleAuthChange = (e) => {
+    const { name, value } = e.target;
+    setAuthForm((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const { data, error } = await supabase.auth.signUp({
-    email: authForm.email,
-    password: authForm.password,
-    options: {
-      data: {
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+    setAuthMessage("");
+
+    const { data, error } = await supabase.auth.signUp({
+      email: authForm.email,
+      password: authForm.password,
+      options: {
+        data: {
+          full_name: authForm.fullName,
+          whatsapp: authForm.whatsapp,
+        },
+      },
+    });
+
+    if (error) {
+      setAuthMessage(error.message);
+      return;
+    }
+
+    if (data.user) {
+      await supabase.from("profiles").upsert({
+        id: data.user.id,
         full_name: authForm.fullName,
         whatsapp: authForm.whatsapp,
-      },
-    },
-  });
+        market: selectedMarket,
+      });
+    }
 
-  if (error) {
-    setAuthMessage(error.message);
-    return;
-  }
+    setAuthMessage("Account created.");
+  };
 
-  if (data.user) {
-    await supabase.from("profiles").upsert({
-      id: data.user.id,
-      full_name: authForm.fullName,
-      whatsapp: authForm.whatsapp,
-      market: selectedMarket,
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    setAuthMessage("");
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: authForm.email,
+      password: authForm.password,
     });
-  }
 
-  setAuthMessage("Account created.");
-};
+    if (error) {
+      setAuthMessage(error.message);
+      return;
+    }
 
-const handleSignIn = async (e) => {
-  e.preventDefault();
+    setShowAuthModal(false);
+    setActiveTab("account");
+  };
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email: authForm.email,
-    password: authForm.password,
-  });
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
 
-  if (error) {
-    setAuthMessage(error.message);
-    return;
-  }
-
-  setShowAuthModal(false);
-};
-
-const handleSignOut = async () => {
-  await supabase.auth.signOut();
-};
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePostUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData((prev) => ({
+        ...prev,
+        imageName: file.name,
+        imagePreview: reader.result,
+      }));
+    };
+    reader.readAsDataURL(file);
   };
 
   const submitPost = (e) => {
@@ -397,13 +434,15 @@ const handleSignOut = async () => {
         price: formData.price || "Free",
         description: formData.description,
         whatsapp: formData.whatsapp,
-        seller: "You",
+        seller: user?.user_metadata?.full_name || user?.email || "You",
         quantity: Number(formData.quantity || 1),
         claimed: 0,
         itemsAvailable: formData.itemsAvailable || "See listing details",
         badge: "New Post",
         ownPost: true,
         featured: false,
+        imageName: formData.imageName,
+        imagePreview: formData.imagePreview,
       };
       setListings((prev) => [newItem, ...prev]);
     }
@@ -418,6 +457,8 @@ const handleSignOut = async () => {
       whatsapp: "",
       quantity: "",
       itemsAvailable: "",
+      imageName: "",
+      imagePreview: "",
     });
     setActiveTab("marketplace");
   };
@@ -433,6 +474,8 @@ const handleSignOut = async () => {
       whatsapp: item.whatsapp,
       quantity: String(item.quantity),
       itemsAvailable: item.itemsAvailable,
+      imageName: item.imageName || "",
+      imagePreview: item.imagePreview || "",
     });
     setActiveTab("post");
   };
@@ -458,20 +501,7 @@ const handleSignOut = async () => {
       setMedForm((prev) => ({ ...prev, prescriptionName: file.name }));
     }
   };
-const handlePostUpload = (e) => {
-  const file = e.target.files?.[0];
-  if (!file) return;
 
-  const reader = new FileReader();
-  reader.onloadend = () => {
-    setFormData((prev) => ({
-      ...prev,
-      imageName: file.name,
-      imagePreview: reader.result,
-    }));
-  };
-  reader.readAsDataURL(file);
-};
   const submitMedSupport = (e) => {
     e.preventDefault();
     setMedSubmitted(true);
@@ -508,32 +538,32 @@ const handlePostUpload = (e) => {
           </select>
 
           <button
-  className="outline-btn"
-  onClick={() => {
-    if (user) {
-      setActiveTab("account");
-    } else {
-      setAuthMode("signin");
-      setShowAuthModal(true);
-    }
-  }}
->
-  {user ? "Account" : "Sign In"}
-</button>
+            className="outline-btn"
+            onClick={() => {
+              if (user) {
+                setActiveTab("account");
+              } else {
+                setAuthMode("signin");
+                setShowAuthModal(true);
+              }
+            }}
+          >
+            {user ? "Account" : "Sign In"}
+          </button>
 
-<button
-  className="solid-btn"
-  onClick={() => {
-    if (user) {
-      setActiveTab("account");
-    } else {
-      setAuthMode("signup");
-      setShowAuthModal(true);
-    }
-  }}
->
-  {user ? "My Account" : "Sign Up"}
-</button>
+          <button
+            className="solid-btn"
+            onClick={() => {
+              if (user) {
+                setActiveTab("account");
+              } else {
+                setAuthMode("signup");
+                setShowAuthModal(true);
+              }
+            }}
+          >
+            {user ? "My Account" : "Sign Up"}
+          </button>
         </div>
       </header>
 
@@ -608,48 +638,25 @@ const handlePostUpload = (e) => {
 
       <main className="main-content">
         {showSignup && (
-  <section className="signup-banner signup-banner-slim">
-    <div>
-      <h3>Join Naborly JA</h3>
-      <p>
-        Create your free account, share to WhatsApp and social, and grow your
-        neighborhood ecosystem.
-      </p>
-    </div>
-    <div className="signup-actions">
-      <button
-        className="solid-btn"
-        onClick={() => {
-          setAuthMode("signup");
-          setShowAuthModal(true);
-          setActiveTab("account");
-        }}
-      >
-        Create Free Account
-      </button>
-      <button className="ghost-btn" onClick={() => setShowSignup(false)}>
-        Dismiss
-      </button>
-    </div>
-  </section>
-)}
+          <section className="signup-banner signup-banner-slim">
             <div>
-              <h3>Join, share, and earn Nabor Points</h3>
+              <h3>Join Naborly JA</h3>
               <p>
-                Sign up, share Naborly with your community, connect by WhatsApp,
-                and grow your neighborhood ecosystem.
+                Create your free account, share to WhatsApp and social, and grow your
+                neighborhood ecosystem.
               </p>
             </div>
             <div className="signup-actions">
               <button
-  className="solid-btn"
-  onClick={() => {
-    setAuthMode("signup");
-    setShowAuthModal(true);
-  }}
->
-  Create Free Account
-</button>
+                className="solid-btn"
+                onClick={() => {
+                  setAuthMode("signup");
+                  setShowAuthModal(true);
+                  setActiveTab("account");
+                }}
+              >
+                Create Free Account
+              </button>
               <button className="ghost-btn" onClick={() => setShowSignup(false)}>
                 Dismiss
               </button>
@@ -691,17 +698,23 @@ const handlePostUpload = (e) => {
                 <strong>Food Support</strong>
                 <span>Emergency help, giveaways, restaurant donations, and community support.</span>
               </button>
-              <button className="action-card" onClick={() => {
-                setActiveTab("marketplace");
-                setSelectedCategory("Local Talent / Services");
-              }}>
+              <button
+                className="action-card"
+                onClick={() => {
+                  setActiveTab("marketplace");
+                  setSelectedCategory("Local Talent / Services");
+                }}
+              >
                 <strong>Hire Local Talent</strong>
                 <span>Book trusted neighborhood talent and service providers.</span>
               </button>
-              <button className="action-card" onClick={() => {
-                setActiveTab("marketplace");
-                setSelectedCategory("Events in the Naborhood");
-              }}>
+              <button
+                className="action-card"
+                onClick={() => {
+                  setActiveTab("marketplace");
+                  setSelectedCategory("Events in the Naborhood");
+                }}
+              >
                 <strong>Events in the Naborhood</strong>
                 <span>Find what is happening nearby and promote your next event.</span>
               </button>
@@ -712,7 +725,12 @@ const handlePostUpload = (e) => {
             </section>
 
             <section className="quick-links">
-              <a className="quick-link" href={whatsappLink("", "Naborly JA")} target="_blank" rel="noreferrer">
+              <a
+                className="quick-link"
+                href={whatsappLink("", "Naborly JA")}
+                target="_blank"
+                rel="noreferrer"
+              >
                 WhatsApp
               </a>
               <button className="quick-link" onClick={() => setActiveTab("support")}>
@@ -757,7 +775,12 @@ const handlePostUpload = (e) => {
                       <button className="mini-btn" onClick={() => toggleSave(item.id)}>
                         {savedIds.includes(item.id) ? "Saved" : "Save"}
                       </button>
-                      <a className="mini-btn linkish" href={whatsappLink(item.whatsapp, item.title)} target="_blank" rel="noreferrer">
+                      <a
+                        className="mini-btn linkish"
+                        href={whatsappLink(item.whatsapp, item.title)}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
                         WhatsApp
                       </a>
                       {item.category === "Local Talent / Services" ? (
@@ -765,7 +788,12 @@ const handlePostUpload = (e) => {
                           Book
                         </button>
                       ) : (
-                        <button className="mini-btn" onClick={() => alert("Payment flow placeholder. Next we can connect real payments.")}>
+                        <button
+                          className="mini-btn"
+                          onClick={() =>
+                            alert("Payment flow placeholder. Next we can connect real payments.")
+                          }
+                        >
                           Pay / Reserve
                         </button>
                       )}
@@ -803,7 +831,10 @@ const handlePostUpload = (e) => {
 
             <section className="listing-grid">
               {filteredListings.map((item) => (
-                <article key={item.id} className={`listing-card ${qtyLeft(item) <= 0 ? "sold-out" : ""}`}>
+                <article
+                  key={item.id}
+                  className={`listing-card ${qtyLeft(item) <= 0 ? "sold-out" : ""}`}
+                >
                   <div className="listing-topline">
                     <span className="pill">{item.category}</span>
                     <span className="micro-badge">{item.badge}</span>
@@ -818,12 +849,8 @@ const handlePostUpload = (e) => {
                   <div className="listing-qty">Quantity: {item.quantity}</div>
                   <div className="listing-qty">{listingStatus(item)}</div>
 
-                  <div className="payment-links">
-                    {PAYMENT_OPTIONS.map((option) => (
-                      <span key={option} className="payment-pill">
-                        {option}
-                      </span>
-                    ))}
+                  <div className="listing-note">
+                    Payment options and full product details appear after you open Pay / Reserve or Book Talent.
                   </div>
 
                   <div className="card-actions">
@@ -847,7 +874,9 @@ const handlePostUpload = (e) => {
                     ) : (
                       <button
                         className="mini-btn"
-                        onClick={() => alert("Payment/reserve flow placeholder. Next we can connect real payments.")}
+                        onClick={() =>
+                          alert("Payment/reserve flow placeholder. Next we can connect real payments.")
+                        }
                       >
                         Pay / Reserve
                       </button>
@@ -866,105 +895,162 @@ const handlePostUpload = (e) => {
         )}
 
         {activeTab === "support" && (
-          <section className="two-col">
-            <div className="section-card">
-              <h2>Food & Support</h2>
-              <p>
-                Find restaurant donations, giveaways, community donations, and neighborhood support.
-              </p>
-              <ul className="support-list">
-                <li>Restaurant food donations</li>
-                <li>Community giveaways</li>
-                <li>Church and partner support</li>
-                <li>Help requests</li>
-                <li>Direct WhatsApp coordination</li>
-              </ul>
-              <a className="solid-btn inline-btn" href={whatsappLink("", "Food Support")} target="_blank" rel="noreferrer">
-                Ask for Help on WhatsApp
-              </a>
-            </div>
-
-            <div className="section-card">
-              <h2>Med Support</h2>
-              <p>
-                Upload prescription details, choose payment or pickup, and coordinate by WhatsApp.
-              </p>
-
-              <form className="post-form" onSubmit={submitMedSupport}>
-                <input
-                  className="search-input"
-                  placeholder="Patient name"
-                  value={medForm.patientName}
-                  onChange={(e) => setMedForm((prev) => ({ ...prev, patientName: e.target.value }))}
-                />
-                <input
-                  className="search-input"
-                  placeholder="Medication needed"
-                  value={medForm.medicationNeed}
-                  onChange={(e) => setMedForm((prev) => ({ ...prev, medicationNeed: e.target.value }))}
-                />
-                <input
-                  className="search-input"
-                  placeholder="WhatsApp number"
-                  value={medForm.whatsapp}
-                  onChange={(e) => setMedForm((prev) => ({ ...prev, whatsapp: e.target.value }))}
-                />
-                <select
-                  className="category-select"
-                  value={medForm.pickupMode}
-                  onChange={(e) => setMedForm((prev) => ({ ...prev, pickupMode: e.target.value }))}
-                >
-                  <option>Pickup</option>
-                  <option>Payment + Delivery</option>
-                </select>
-                <select
-                  className="category-select"
-                  value={medForm.paymentOption}
-                  onChange={(e) => setMedForm((prev) => ({ ...prev, paymentOption: e.target.value }))}
-                >
-                  {PAYMENT_OPTIONS.map((option) => (
-                    <option key={option}>{option}</option>
-                  ))}
-                </select>
-                <label className="upload-box upload-left">
-                  <strong>Prescription Upload</strong>
-                  <small>{medForm.prescriptionName || "Attach prescription image or file"}</small>
-                  <input type="file" className="hidden-input" onChange={handleMedUpload} />
-                </label>
-                <textarea
-                  className="text-area"
-                  rows="4"
-                  placeholder="Notes"
-                  value={medForm.notes}
-                  onChange={(e) => setMedForm((prev) => ({ ...prev, notes: e.target.value }))}
-                />
-                <div className="info-box">
-                  <strong>Pickup note</strong>
-                  <p>
-                    If a family member or helper is picking up medication, the prescription
-                    should be presented at pickup.
-                  </p>
-                </div>
-                <div className="card-actions">
-                  <button className="solid-btn" type="submit">
-                    Submit Med Support
-                  </button>
-                  <a
-                    className="mini-btn linkish"
-                    href={whatsappLink(medForm.whatsapp, "Medication Support")}
-                    target="_blank"
-                    rel="noreferrer"
+          <>
+            <section className="section-card">
+              <div className="section-header">
+                <h2>Food & Support</h2>
+              </div>
+              <div className="listing-grid">
+                {supportListings.map((item) => (
+                  <article
+                    key={item.id}
+                    className={`listing-card ${qtyLeft(item) <= 0 ? "sold-out" : ""}`}
                   >
-                    WhatsApp Support
-                  </a>
-                </div>
-              </form>
+                    <div className="listing-topline">
+                      <span className="pill">{item.category}</span>
+                      <span className="micro-badge">{item.badge}</span>
+                    </div>
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                    <div className="listing-meta">
+                      <span>{item.location}</span>
+                      <span>{item.price}</span>
+                    </div>
+                    <div className="listing-qty">What’s available: {item.itemsAvailable}</div>
+                    <div className="listing-qty">{listingStatus(item)}</div>
+                    <div className="card-actions">
+                      <a
+                        className="mini-btn linkish"
+                        href={whatsappLink(item.whatsapp, item.title)}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        WhatsApp Support
+                      </a>
+                      <button className="mini-btn">Learn More</button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
 
-              {medSubmitted ? (
-                <p className="subscribe-note">Med Support request captured.</p>
-              ) : null}
-            </div>
-          </section>
+            <section className="two-col">
+              <div className="section-card">
+                <h2>Food & Support</h2>
+                <p>
+                  Find restaurant donations, giveaways, community donations, and neighborhood support.
+                </p>
+                <ul className="support-list">
+                  <li>Restaurant food donations</li>
+                  <li>Community giveaways</li>
+                  <li>Church and partner support</li>
+                  <li>Help requests</li>
+                  <li>Direct WhatsApp coordination</li>
+                </ul>
+                <a
+                  className="solid-btn inline-btn"
+                  href={whatsappLink("", "Food Support")}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Ask for Help on WhatsApp
+                </a>
+              </div>
+
+              <div className="section-card">
+                <h2>Med Support</h2>
+                <p>
+                  Upload prescription details, choose payment or pickup, and coordinate by WhatsApp.
+                </p>
+
+                <form className="post-form" onSubmit={submitMedSupport}>
+                  <input
+                    className="search-input"
+                    placeholder="Patient name"
+                    value={medForm.patientName}
+                    onChange={(e) =>
+                      setMedForm((prev) => ({ ...prev, patientName: e.target.value }))
+                    }
+                  />
+                  <input
+                    className="search-input"
+                    placeholder="Medication needed"
+                    value={medForm.medicationNeed}
+                    onChange={(e) =>
+                      setMedForm((prev) => ({ ...prev, medicationNeed: e.target.value }))
+                    }
+                  />
+                  <input
+                    className="search-input"
+                    placeholder="WhatsApp number"
+                    value={medForm.whatsapp}
+                    onChange={(e) =>
+                      setMedForm((prev) => ({ ...prev, whatsapp: e.target.value }))
+                    }
+                  />
+                  <select
+                    className="category-select"
+                    value={medForm.pickupMode}
+                    onChange={(e) =>
+                      setMedForm((prev) => ({ ...prev, pickupMode: e.target.value }))
+                    }
+                  >
+                    <option>Pickup</option>
+                    <option>Payment + Delivery</option>
+                  </select>
+                  <select
+                    className="category-select"
+                    value={medForm.paymentOption}
+                    onChange={(e) =>
+                      setMedForm((prev) => ({ ...prev, paymentOption: e.target.value }))
+                    }
+                  >
+                    {PAYMENT_OPTIONS.map((option) => (
+                      <option key={option}>{option}</option>
+                    ))}
+                  </select>
+                  <label className="upload-box upload-left">
+                    <strong>Prescription Upload</strong>
+                    <small>{medForm.prescriptionName || "Attach prescription image or file"}</small>
+                    <input type="file" className="hidden-input" onChange={handleMedUpload} />
+                  </label>
+                  <textarea
+                    className="text-area"
+                    rows="4"
+                    placeholder="Notes"
+                    value={medForm.notes}
+                    onChange={(e) =>
+                      setMedForm((prev) => ({ ...prev, notes: e.target.value }))
+                    }
+                  />
+                  <div className="info-box">
+                    <strong>Pickup note</strong>
+                    <p>
+                      If a family member or helper is picking up medication, the prescription
+                      should be presented at pickup.
+                    </p>
+                  </div>
+                  <div className="card-actions">
+                    <button className="solid-btn" type="submit">
+                      Submit Med Support
+                    </button>
+                    <a
+                      className="mini-btn linkish"
+                      href={whatsappLink(medForm.whatsapp, "Medication Support")}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      WhatsApp Support
+                    </a>
+                  </div>
+                </form>
+
+                {medSubmitted ? (
+                  <p className="subscribe-note">Med Support request captured.</p>
+                ) : null}
+              </div>
+            </section>
+          </>
         )}
 
         {activeTab === "post" && (
@@ -1048,10 +1134,22 @@ const handlePostUpload = (e) => {
                 placeholder="WhatsApp number"
               />
 
-              <div className="upload-box">
-                <span>Image upload area</span>
-                <small>Next: connect real uploads and gallery images.</small>
-              </div>
+              <label className="upload-box upload-left">
+                <strong>Upload Image</strong>
+                <small>{formData.imageName || "Choose a product or service image"}</small>
+                <input
+                  type="file"
+                  className="hidden-input"
+                  accept="image/*"
+                  onChange={handlePostUpload}
+                />
+              </label>
+
+              {formData.imagePreview ? (
+                <div className="image-preview-wrap">
+                  <img src={formData.imagePreview} alt="Preview" className="image-preview" />
+                </div>
+              ) : null}
 
               <div className="card-actions">
                 <button type="submit" className="solid-btn">
@@ -1072,6 +1170,8 @@ const handlePostUpload = (e) => {
                         whatsapp: "",
                         quantity: "",
                         itemsAvailable: "",
+                        imageName: "",
+                        imagePreview: "",
                       });
                     }}
                   >
@@ -1123,7 +1223,12 @@ const handlePostUpload = (e) => {
                   <div className="ad-card" key={ad.title}>
                     <strong>{ad.title}</strong>
                     <p>{ad.text}</p>
-                    <button   className="mini-btn"   onClick={() => setActiveTab("partners")} >   Promote </button>
+                    <button
+                      className="mini-btn"
+                      onClick={() => setActiveTab("partners")}
+                    >
+                      Promote
+                    </button>
                   </div>
                 ))}
               </div>
@@ -1177,41 +1282,43 @@ const handlePostUpload = (e) => {
               <h2>Account</h2>
               <div className="account-box">
                 <div className="account-line">
-  <strong>Profile:</strong>{" "}
-  {user?.user_metadata?.full_name || user?.email || "Community Member"}
-</div>
+                  <strong>Profile:</strong>{" "}
+                  {user?.user_metadata?.full_name || user?.email || "Community Member"}
+                </div>
                 <div className="account-line"><strong>Market:</strong> {selectedMarket}</div>
                 <div className="account-line"><strong>Nabor Points:</strong> {naborPoints}</div>
                 <div className="account-line"><strong>My Posts:</strong> {myPosts.length}</div>
               </div>
-<div className="card-actions">
-  {user ? (
-    <button className="mini-btn" onClick={handleSignOut}>
-      Sign Out
-    </button>
-  ) : (
-    <>
-      <button
-        className="mini-btn"
-        onClick={() => {
-          setAuthMode("signin");
-          setShowAuthModal(true);
-        }}
-      >
-        Sign In
-      </button>
-      <button
-        className="mini-btn"
-        onClick={() => {
-          setAuthMode("signup");
-          setShowAuthModal(true);
-        }}
-      >
-        Create Free Account
-      </button>
-    </>
-  )}
-</div>
+
+              <div className="card-actions">
+                {user ? (
+                  <button className="mini-btn" onClick={handleSignOut}>
+                    Sign Out
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      className="mini-btn"
+                      onClick={() => {
+                        setAuthMode("signin");
+                        setShowAuthModal(true);
+                      }}
+                    >
+                      Sign In
+                    </button>
+                    <button
+                      className="mini-btn"
+                      onClick={() => {
+                        setAuthMode("signup");
+                        setShowAuthModal(true);
+                      }}
+                    >
+                      Create Free Account
+                    </button>
+                  </>
+                )}
+              </div>
+
               <div className="section-card inner-card">
                 <h3>Share & Earn</h3>
                 <p>Share Naborly by QR, WhatsApp, or social and earn Nabor Points.</p>
@@ -1266,84 +1373,88 @@ const handlePostUpload = (e) => {
           </section>
         )}
       </main>
-{showAuthModal ? (
-  <div className="modal-backdrop">
-    <div className="modal-card">
-      <div className="modal-head">
-        <h3>{authMode === "signup" ? "Create Free Account" : "Sign In"}</h3>
-        <button className="mini-btn" onClick={() => setShowAuthModal(false)}>
-          Close
-        </button>
-      </div>
 
-      <form
-        className="post-form"
-        onSubmit={authMode === "signup" ? handleSignUp : handleSignIn}
-      >
-        {authMode === "signup" ? (
-          <>
-            <input
-              className="search-input"
-              name="fullName"
-              placeholder="Full name"
-              value={authForm.fullName}
-              onChange={handleAuthChange}
-            />
-            <input
-              className="search-input"
-              name="whatsapp"
-              placeholder="WhatsApp number"
-              value={authForm.whatsapp}
-              onChange={handleAuthChange}
-            />
-          </>
-        ) : null}
+      {showAuthModal ? (
+        <div className="modal-backdrop">
+          <div className="modal-card">
+            <div className="modal-head">
+              <h3>{authMode === "signup" ? "Create Free Account" : "Sign In"}</h3>
+              <button className="mini-btn" onClick={() => setShowAuthModal(false)}>
+                Close
+              </button>
+            </div>
 
-        <input
-          className="search-input"
-          name="email"
-          type="email"
-          placeholder="Email"
-          value={authForm.email}
-          onChange={handleAuthChange}
-        />
+            <form
+              className="post-form"
+              onSubmit={authMode === "signup" ? handleSignUp : handleSignIn}
+            >
+              {authMode === "signup" ? (
+                <>
+                  <input
+                    className="search-input"
+                    name="fullName"
+                    placeholder="Full name"
+                    value={authForm.fullName}
+                    onChange={handleAuthChange}
+                  />
+                  <input
+                    className="search-input"
+                    name="whatsapp"
+                    placeholder="WhatsApp number"
+                    value={authForm.whatsapp}
+                    onChange={handleAuthChange}
+                  />
+                </>
+              ) : null}
 
-        <input
-          className="search-input"
-          name="password"
-          type="password"
-          placeholder="Password"
-          value={authForm.password}
-          onChange={handleAuthChange}
-        />
+              <input
+                className="search-input"
+                name="email"
+                type="email"
+                placeholder="Email"
+                value={authForm.email}
+                onChange={handleAuthChange}
+              />
 
-        <button className="solid-btn" type="submit">
-          {authMode === "signup" ? "Create Account" : "Sign In"}
-        </button>
+              <input
+                className="search-input"
+                name="password"
+                type="password"
+                placeholder="Password"
+                value={authForm.password}
+                onChange={handleAuthChange}
+              />
 
-        <button
-          type="button"
-          className="mini-btn"
-          onClick={() =>
-            setAuthMode((prev) => (prev === "signup" ? "signin" : "signup"))
-          }
-        >
-          {authMode === "signup"
-            ? "Already have an account? Sign In"
-            : "Need an account? Sign Up"}
-        </button>
+              <button className="solid-btn" type="submit">
+                {authMode === "signup" ? "Create Account" : "Sign In"}
+              </button>
 
-        {authMessage ? <p className="subscribe-note">{authMessage}</p> : null}
-      </form>
-    </div>
-  </div>
-) : null}
+              <button
+                type="button"
+                className="mini-btn"
+                onClick={() =>
+                  setAuthMode((prev) => (prev === "signup" ? "signin" : "signup"))
+                }
+              >
+                {authMode === "signup"
+                  ? "Already have an account? Sign In"
+                  : "Need an account? Sign Up"}
+              </button>
+
+              {authMessage ? <p className="subscribe-note">{authMessage}</p> : null}
+            </form>
+          </div>
+        </div>
+      ) : null}
+
       {bookingItem ? (
         <div className="modal-backdrop">
           <div className="modal-card">
             <div className="modal-head">
               <h3>Book Talent Appointment</h3>
-              <button className="mini-btn" onClick={() => setBookingItem(null)}>Close</button>
+              <button className="mini-btn" onClick={() => setBookingItem(null)}>
+                Close
+              </button>
             </div>
             <p className="modal-sub">
               {bookingItem.title} · {bookingItem.location}
