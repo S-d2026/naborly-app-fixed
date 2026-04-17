@@ -1,0 +1,1 @@
+Upload these files to GitHub, run schema.sql then storage.sql in Supabase, set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Vercel, then redeploy.
