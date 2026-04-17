@@ -1139,7 +1139,10 @@ const handleSignOut = async () => {
             <div className="section-card">
               <h2>Account</h2>
               <div className="account-box">
-                <div className="account-line"><strong>Profile:</strong> Community Member</div>
+                <div className="account-line">
+  <strong>Profile:</strong>{" "}
+  {user?.user_metadata?.full_name || user?.email || "Community Member"}
+</div>
                 <div className="account-line"><strong>Market:</strong> {selectedMarket}</div>
                 <div className="account-line"><strong>Nabor Points:</strong> {naborPoints}</div>
                 <div className="account-line"><strong>My Posts:</strong> {myPosts.length}</div>
