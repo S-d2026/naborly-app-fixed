@@ -604,7 +604,15 @@ const handleSignOut = async () => {
               </p>
             </div>
             <div className="signup-actions">
-              <button className="solid-btn">Create Free Account</button>
+              <button
+  className="solid-btn"
+  onClick={() => {
+    setAuthMode("signup");
+    setShowAuthModal(true);
+  }}
+>
+  Create Free Account
+</button>
               <button className="ghost-btn" onClick={() => setShowSignup(false)}>
                 Dismiss
               </button>
@@ -1078,7 +1086,7 @@ const handleSignOut = async () => {
                   <div className="ad-card" key={ad.title}>
                     <strong>{ad.title}</strong>
                     <p>{ad.text}</p>
-                    <button className="mini-btn">Promote</button>
+                    <button   className="mini-btn"   onClick={() => setActiveTab("partners")} >   Promote </button>
                   </div>
                 ))}
               </div>
