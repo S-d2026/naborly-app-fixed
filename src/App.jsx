@@ -458,7 +458,20 @@ const handleSignOut = async () => {
       setMedForm((prev) => ({ ...prev, prescriptionName: file.name }));
     }
   };
+const handlePostUpload = (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
 
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    setFormData((prev) => ({
+      ...prev,
+      imageName: file.name,
+      imagePreview: reader.result,
+    }));
+  };
+  reader.readAsDataURL(file);
+};
   const submitMedSupport = (e) => {
     e.preventDefault();
     setMedSubmitted(true);
@@ -595,7 +608,31 @@ const handleSignOut = async () => {
 
       <main className="main-content">
         {showSignup && (
-          <section className="signup-banner">
+  <section className="signup-banner signup-banner-slim">
+    <div>
+      <h3>Join Naborly JA</h3>
+      <p>
+        Create your free account, share to WhatsApp and social, and grow your
+        neighborhood ecosystem.
+      </p>
+    </div>
+    <div className="signup-actions">
+      <button
+        className="solid-btn"
+        onClick={() => {
+          setAuthMode("signup");
+          setShowAuthModal(true);
+          setActiveTab("account");
+        }}
+      >
+        Create Free Account
+      </button>
+      <button className="ghost-btn" onClick={() => setShowSignup(false)}>
+        Dismiss
+      </button>
+    </div>
+  </section>
+)}
             <div>
               <h3>Join, share, and earn Nabor Points</h3>
               <p>
