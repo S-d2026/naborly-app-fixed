@@ -1,692 +1,1504 @@
-:root {
-  --bg: #f8f4ea;
-  --panel: #fffaf0;
-  --ink: #1b1b1b;
-  --muted: #5d5d5d;
-  --green: #0f7b3d;
-  --gold: #d8a625;
-  --black: #111111;
-  --accent: #f3d66b;
-  --line: rgba(0, 0, 0, 0.08);
-  --shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: Inter, Arial, sans-serif;
-  background: linear-gradient(180deg, #f8f4ea 0%, #f3ebd7 100%);
-  color: var(--ink);
-}
-
-button,
-input,
-select,
-textarea {
-  font: inherit;
-}
-
-.app-shell {
-  min-height: 100vh;
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 22px 32px;
-  background: rgba(255, 250, 240, 0.95);
-  backdrop-filter: blur(6px);
-  border-bottom: 1px solid var(--line);
-  position: sticky;
-  top: 0;
-  z-index: 30;
-}
-
-.brand-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.brand-mark {
-  font-size: 1.9rem;
-  font-weight: 900;
-  letter-spacing: 0.02em;
-}
-
-.welcome-inline {
-  display: inline-block;
-  font-weight: 800;
-  color: var(--green);
-  font-size: 1rem;
-}
-
-.brand-sub {
-  color: var(--muted);
-  font-size: 0.95rem;
-}
-
-.topbar-actions {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.location-select,
-.category-select,
-.search-input,
-.text-area {
-  border: 1px solid var(--line);
-  background: white;
-  border-radius: 14px;
-  padding: 12px 14px;
-  width: 100%;
-}
-
-.solid-btn,
-.outline-btn,
-.outline-light-btn,
-.ghost-btn,
-.mini-btn,
-.quick-link,
-.tab,
-.text-btn {
-  border: none;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.solid-btn {
-  background: linear-gradient(135deg, var(--green), #21a055);
-  color: white;
-  border-radius: 14px;
-  padding: 12px 18px;
-  font-weight: 700;
-  box-shadow: var(--shadow);
-}
-
-.outline-btn {
-  background: white;
-  color: var(--black);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 12px 18px;
-  font-weight: 700;
-}
-
-.outline-light-btn {
-  background: rgba(255, 255, 255, 0.16);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 14px;
-  padding: 12px 18px;
-  font-weight: 700;
-}
-
-.ghost-btn {
-  background: transparent;
-  color: var(--muted);
-  padding: 10px 14px;
-}
-
-.hero {
-  position: relative;
-  min-height: 420px;
-  display: flex;
-  align-items: center;
-  padding: 48px 32px;
-  overflow: hidden;
-}
-
-.jamaica-hero {
-  background:
-    linear-gradient(135deg, rgba(0, 0, 0, 0.55), rgba(15, 123, 61, 0.42)),
-    linear-gradient(45deg, #0f7b3d 0%, #d8a625 52%, #111111 100%);
-}
-
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.18), transparent 30%),
-    radial-gradient(circle at 80% 30%, rgba(255,255,255,0.12), transparent 25%);
-}
-
-.hero-content {
-  position: relative;
-  z-index: 1;
-  max-width: 900px;
-  color: white;
-}
-
-.hero h1 {
-  font-size: clamp(2.2rem, 4vw, 4.1rem);
-  line-height: 1.05;
-  margin: 0 0 16px;
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.28);
-}
-
-.hero p {
-  font-size: 1.05rem;
-  max-width: 720px;
-  color: rgba(255, 255, 255, 0.92);
-  text-shadow: 0 3px 16px rgba(0, 0, 0, 0.2);
-}
-
-.hero-buttons {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 22px;
-}
-
-.wave-card {
-  margin-top: 22px;
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  padding: 16px;
-  border-radius: 22px;
-  background: rgba(255,255,255,0.14);
-  border: 1px solid rgba(255,255,255,0.28);
-  max-width: 620px;
-}
-
-.wave-emoji {
-  font-size: 2.2rem;
-  animation: wave 1.8s infinite ease-in-out;
-  transform-origin: 70% 70%;
-}
-
-@keyframes wave {
-  0% { transform: rotate(0deg); }
-  15% { transform: rotate(18deg); }
-  30% { transform: rotate(-8deg); }
-  45% { transform: rotate(16deg); }
-  60% { transform: rotate(-4deg); }
-  100% { transform: rotate(0deg); }
-}
-
-.wave-title {
-  font-size: 1.18rem;
-  font-weight: 800;
-}
-
-.wave-text {
-  color: rgba(255,255,255,0.92);
-  font-size: 0.96rem;
-}
-
-.main-tabs {
-  display: flex;
-  gap: 10px;
-  padding: 18px 32px 0;
-  flex-wrap: wrap;
-}
-
-.tab {
-  background: rgba(255,255,255,0.82);
-  padding: 11px 16px;
-  border-radius: 999px;
-  font-weight: 700;
-  border: 1px solid var(--line);
-}
-
-.tab.active {
-  background: var(--black);
-  color: white;
-}
-
-.main-content {
-  padding: 24px 32px 48px;
-}
-
-.signup-banner,
-.section-card,
-.feature-card,
-.listing-card,
-.stat-card,
-.action-card,
-.ad-card {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
-}
-
-.signup-banner {
-  border-radius: 24px;
-  padding: 24px;
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  align-items: center;
-  margin-bottom: 24px;
-}
-
-.signup-actions {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.stats-grid,
-.quick-action-grid,
-.listing-grid,
-.partner-grid,
-.promise-grid,
-.ads-grid {
-  display: grid;
-  gap: 18px;
-}
-
-.stats-grid {
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  margin-bottom: 24px;
-}
-
-.stat-card {
-  border-radius: 22px;
-  padding: 18px;
-  text-align: center;
-}
-
-.stat-card strong {
-  display: block;
-  font-size: 1.55rem;
-  margin-bottom: 6px;
-}
-
-.stat-card span {
-  color: var(--muted);
-  font-size: 0.92rem;
-}
-
-.quick-action-grid {
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  margin-bottom: 24px;
-}
-
-.action-card {
-  border-radius: 22px;
-  padding: 18px;
-  text-align: left;
-}
-
-.action-card strong {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 1rem;
-}
-
-.action-card span {
-  color: var(--muted);
-  font-size: 0.92rem;
-  line-height: 1.5;
-}
-
-.quick-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.quick-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  text-decoration: none;
-  background: white;
-  border: 1px solid var(--line);
-  color: var(--ink);
-  border-radius: 999px;
-  padding: 12px 16px;
-  font-weight: 700;
-}
-
-.section-card {
-  border-radius: 24px;
-  padding: 24px;
-  margin-bottom: 24px;
-}
-
-.section-card.narrow {
-  max-width: 820px;
-}
-
-.inner-card {
-  margin-top: 18px;
-  background: rgba(255,255,255,0.6);
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: center;
-}
-
-.text-btn {
-  background: transparent;
-  color: var(--green);
-  font-weight: 800;
-}
-
-.listing-grid {
-  grid-template-columns: repeat(auto-fit, minmax(245px, 1fr));
-}
-
-.listing-card {
-  border-radius: 22px;
-  padding: 20px;
-}
-
-.listing-topline {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 8px;
-  flex-wrap: wrap;
-}
-
-.pill {
-  display: inline-block;
-  background: #f1e7be;
-  color: #6a5200;
-  border-radius: 999px;
-  padding: 7px 12px;
-  font-size: 0.8rem;
-  font-weight: 800;
-}
-
-.micro-badge {
-  display: inline-block;
-  background: #eef4ff;
-  color: #204a9e;
-  border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 0.72rem;
-  font-weight: 800;
-}
-
-.listing-card h3 {
-  margin: 6px 0 10px;
-}
-
-.listing-card p {
-  color: var(--muted);
-}
-
-.listing-meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-size: 0.92rem;
-  margin-top: 14px;
-  color: #333;
-}
-
-.listing-qty {
-  margin-top: 8px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--green);
-}
-
-.sold-out {
-  opacity: 0.75;
-}
-
-.card-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
-  flex-wrap: wrap;
-}
-
-.mini-btn {
-  background: white;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 9px 12px;
-  font-weight: 700;
-}
-
-.linkish {
-  text-decoration: none;
-  color: var(--green);
-}
-
-.payment-links {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-  flex-wrap: wrap;
-}
-
-.payment-pill {
-  background: #f5f5f5;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 0.78rem;
-  font-weight: 700;
-}
-
-.filters-bar,
-.subscribe-box,
-.two-col,
-.post-form {
-  display: grid;
-  gap: 16px;
-}
-
-.filters-bar {
-  grid-template-columns: 2fr 1fr;
-  margin-bottom: 24px;
-}
-
-.two-col {
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-}
-
-.support-list {
-  padding-left: 18px;
-  line-height: 1.8;
-}
-
-.info-box,
-.account-box,
-.upload-box,
-.partner-box,
-.partner-plan,
-.ad-card {
-  border: 1px dashed rgba(0, 0, 0, 0.14);
-  background: rgba(255,255,255,0.55);
-  border-radius: 18px;
-  padding: 16px;
-}
-
-.upload-left {
-  text-align: left;
-}
-
-.hidden-input {
-  display: block;
-  margin-top: 10px;
-}
-
-.partner-grid {
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  margin-top: 18px;
-}
-
-.partner-plan-grid {
-  display: grid;
-  gap: 14px;
-  margin-top: 18px;
-}
-
-.partner-plan strong {
-  display: block;
-  margin-bottom: 6px;
-}
-
-.partner-plan span {
-  display: inline-block;
-  color: var(--green);
-  font-weight: 800;
-  margin-bottom: 8px;
-}
-
-.ads-grid {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  margin-bottom: 16px;
-}
-
-.ad-card strong {
-  display: block;
-  margin-bottom: 8px;
-}
-
-.post-form {
-  margin-top: 18px;
-}
-
-.text-area {
-  resize: vertical;
-}
-
-.upload-box {
-  text-align: center;
-  padding: 24px;
-  color: var(--muted);
-}
-
-.inline-btn {
-  display: inline-flex;
-  margin-top: 10px;
-  text-decoration: none;
-}
-
-.account-line {
-  margin-bottom: 10px;
-}
-
-.subscribe-note {
-  margin-top: 12px;
-  color: var(--green);
-  font-weight: 700;
-}
-
-.qr-box {
-  margin-top: 16px;
-  margin-bottom: 16px;
-}
-
-.qr-image {
-  width: 180px;
-  height: 180px;
-  border-radius: 18px;
-  background: white;
-  padding: 10px;
-  border: 1px solid var(--line);
-}
-
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 40;
-  padding: 20px;
-}
-
-.modal-card {
-  width: min(560px, 100%);
-  background: white;
-  border-radius: 24px;
-  padding: 24px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
-}
-
-.modal-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  align-items: center;
-}
-
-.modal-sub {
-  color: var(--muted);
-}
-
-.quick-link:hover,
-.mini-btn:hover,
-.partner-plan:hover,
-.action-card:hover,
-.ad-card:hover {
-  box-shadow: 0 14px 30px rgba(0,0,0,0.08);
-  transform: translateY(-1px);
-}
-
-@media (max-width: 820px) {
-  .topbar,
-  .signup-banner,
-  .section-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .hero {
-    padding: 32px 20px;
-  }
-
-  .main-tabs,
-  .main-content,
-  .topbar {
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-
-  .filters-bar {
-    grid-template-columns: 1fr;
-  }
-
-  .stats-grid,
-  .quick-action-grid,
-  .promise-grid {
-    grid-template-columns: 1fr;
-  }
-}
-.signup-banner-slim {
-  padding: 18px 22px;
-  align-items: center;
-}
-
-.image-preview-wrap {
-  margin-top: 8px;
-}
-
-.image-preview {
-  width: 100%;
-  max-width: 240px;
-  border-radius: 18px;
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow);
-}
-
-.listing-note {
-  margin-top: 12px;
-  color: var(--muted);
-  font-size: 0.88rem;
-  line-height: 1.4;
-}
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "./supabaseClient";
+import "./styles.css";
+
+const APP_URL = "https://naborlyja.com/";
+const SHARE_TEXT =
+  "Join Naborly JA — a neighborhood ecosystem for food, support, talent, events, vendors, and community connection.";
+
+const MARKETS = [
+  "Naborly JA",
+  "Naborly Barbados",
+  "Naborly Trinidad",
+  "Naborly Guyana",
+  "Naborly UK",
+  "Naborly USA",
+  "Naborly Toronto",
+];
+
+const POST_CATEGORIES = [
+  "Food for Sale",
+  "Giveaways",
+  "Restaurant Donations",
+  "Community Donations",
+  "Local Talent / Services",
+  "Events in the Naborhood",
+  "Help Request",
+];
+
+const FILTER_CATEGORIES = ["All", ...POST_CATEGORIES];
+
+const PAYMENT_OPTIONS = [
+  "Card",
+  "Bank Transfer",
+  "Cash at Pickup",
+  "Local Wallet",
+];
+
+const STARTER_LISTINGS = [
+  {
+    id: 1,
+    title: "Fresh fruit bags",
+    category: "Food for Sale",
+    location: "Kingston, Jamaica",
+    price: "JMD $700",
+    description: "Banana, orange, mango, and pineapple bags available for same-day pickup.",
+    whatsapp: "18765551001",
+    seller: "Marcia's Produce",
+    quantity: 8,
+    claimed: 2,
+    itemsAvailable: "Banana, orange, pineapple, mango",
+    badge: "Trusted Vendor",
+    ownPost: false,
+    featured: true,
+  },
+  {
+    id: 2,
+    title: "Restaurant meal donations",
+    category: "Restaurant Donations",
+    location: "Half Way Tree, Jamaica",
+    price: "Free",
+    description: "Prepared meals available for evening pickup while quantities last.",
+    whatsapp: "18765551002",
+    seller: "Island Kitchen",
+    quantity: 20,
+    claimed: 11,
+    itemsAvailable: "Rice meals, chicken meals, vegetable meals",
+    badge: "Restaurant Donation",
+    ownPost: false,
+    featured: true,
+  },
+  {
+    id: 3,
+    title: "Light housekeeping and support",
+    category: "Local Talent / Services",
+    location: "Portmore, Jamaica",
+    price: "JMD $1,500 / visit",
+    description: "Cleaning, tidying, errands, and light household support.",
+    whatsapp: "18765551003",
+    seller: "Sandra M.",
+    quantity: 3,
+    claimed: 0,
+    itemsAvailable: "Morning slots, afternoon slots, evening slots",
+    badge: "Local Talent",
+    ownPost: false,
+    featured: true,
+  },
+  {
+    id: 4,
+    title: "Community family day",
+    category: "Events in the Naborhood",
+    location: "Ocho Rios, Jamaica",
+    price: "Free Entry",
+    description: "Music, food vendors, giveaways, children activities, and local business booths.",
+    whatsapp: "18765551004",
+    seller: "City Organizers",
+    quantity: 150,
+    claimed: 43,
+    itemsAvailable: "Family entry spots",
+    badge: "Community Event",
+    ownPost: false,
+    featured: false,
+  },
+  {
+    id: 5,
+    title: "Neighborhood grocery giveaway",
+    category: "Giveaways",
+    location: "Spanish Town, Jamaica",
+    price: "Free",
+    description: "Pantry items and produce for pickup while supplies last.",
+    whatsapp: "18765551005",
+    seller: "Community Hub",
+    quantity: 15,
+    claimed: 15,
+    itemsAvailable: "Rice, canned goods, bread, produce",
+    badge: "Fully Claimed",
+    ownPost: false,
+    featured: false,
+  },
+  {
+    id: 6,
+    title: "Church pantry support",
+    category: "Community Donations",
+    location: "St. Catherine, Jamaica",
+    price: "Free",
+    description: "Food support and household essentials available by referral.",
+    whatsapp: "18765551006",
+    seller: "Grace Community Church",
+    quantity: 12,
+    claimed: 5,
+    itemsAvailable: "Food boxes, baby items, toiletries",
+    badge: "Partner",
+    ownPost: false,
+    featured: false,
+  },
+  {
+    id: 7,
+    title: "Driver available for appointments",
+    category: "Local Talent / Services",
+    location: "Montego Bay, Jamaica",
+    price: "From JMD $2,000",
+    description: "Local rides for appointments, school pickup, errands, and airport runs.",
+    whatsapp: "18765551007",
+    seller: "Andre Rides",
+    quantity: 5,
+    claimed: 1,
+    itemsAvailable: "5 open booking slots",
+    badge: "Book Talent",
+    ownPost: false,
+    featured: false,
+  },
+];
+
+function whatsappLink(number, title) {
+  const clean = String(number || "").replace(/\D/g, "");
+  const msg = encodeURIComponent(`Hi, I saw "${title}" on Naborly JA. Is it still available?`);
+  return clean ? `https://wa.me/${clean}?text=${msg}` : `https://wa.me/?text=${msg}`;
+}
+
+function qtyLeft(item) {
+  return Math.max(Number(item.quantity || 0) - Number(item.claimed || 0), 0);
+}
+
+function listingStatus(item) {
+  const left = qtyLeft(item);
+  if (left <= 0) return "Claimed / No longer available";
+  if (left <= 2) return `Only ${left} left`;
+  return `${left} available`;
+}
+
+function qrCodeUrl(link) {
+  return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(link)}`;
+}
+
+function WaveHello() {
+  return (
+    <div className="wave-card">
+      <div className="wave-emoji">👋🏾</div>
+      <div>
+        <div className="wave-title">Hello Nabor</div>
+        <div className="wave-text">
+          A neighborhood ecosystem for food, support, talent, events, vendors,
+          donations, and community connection.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function App() {
+  const [activeTab, setActiveTab] = useState("home");
+  const [selectedMarket, setSelectedMarket] = useState("Naborly JA");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showSignup, setShowSignup] = useState(true);
+  const [shareCopied, setShareCopied] = useState(false);
+  const [naborPoints] = useState(340);
+  const [savedIds, setSavedIds] = useState([1, 2, 3]);
+  const [bookingItem, setBookingItem] = useState(null);
+  const [medSubmitted, setMedSubmitted] = useState(false);
+  const [bookingMessage, setBookingMessage] = useState("");
+  const [subscribeEmail, setSubscribeEmail] = useState("");
+  const [subscribeMessage, setSubscribeMessage] = useState("");
+  const [listings, setListings] = useState(STARTER_LISTINGS);
+  const [editingId, setEditingId] = useState(null);
+
+  const [user, setUser] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState("signin");
+  const [authMessage, setAuthMessage] = useState("");
+
+  const [authForm, setAuthForm] = useState({
+    fullName: "",
+    whatsapp: "",
+    email: "",
+    password: "",
+  });
+
+  const [formData, setFormData] = useState({
+    title: "",
+    category: "Food for Sale",
+    location: "",
+    price: "",
+    description: "",
+    whatsapp: "",
+    quantity: "",
+    itemsAvailable: "",
+    imageName: "",
+    imagePreview: "",
+  });
+
+  const [bookingData, setBookingData] = useState({
+    date: "",
+    time: "",
+    notes: "",
+  });
+
+  const [medForm, setMedForm] = useState({
+    patientName: "",
+    medicationNeed: "",
+    pickupMode: "Pickup",
+    paymentOption: "Card",
+    whatsapp: "",
+    notes: "",
+    prescriptionName: "",
+  });
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user || null);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const stats = useMemo(() => {
+    const activeListings = listings.filter((item) => qtyLeft(item) > 0).length;
+    const talentCount = listings.filter(
+      (item) => item.category === "Local Talent / Services" && qtyLeft(item) > 0
+    ).length;
+    const eventCount = listings.filter(
+      (item) => item.category === "Events in the Naborhood" && qtyLeft(item) > 0
+    ).length;
+    const donationCount = listings.filter(
+      (item) =>
+        item.category === "Restaurant Donations" ||
+        item.category === "Community Donations" ||
+        item.category === "Giveaways" ||
+        item.category === "Help Request"
+    ).length;
+
+    return { activeListings, talentCount, eventCount, donationCount };
+  }, [listings]);
+
+  const filteredListings = useMemo(() => {
+    return listings.filter((item) => {
+      const categoryOk =
+        selectedCategory === "All" || item.category === selectedCategory;
+      const q = searchTerm.toLowerCase();
+      const searchOk =
+        item.title.toLowerCase().includes(q) ||
+        item.description.toLowerCase().includes(q) ||
+        item.location.toLowerCase().includes(q) ||
+        item.seller.toLowerCase().includes(q) ||
+        item.category.toLowerCase().includes(q) ||
+        item.itemsAvailable.toLowerCase().includes(q);
+      return categoryOk && searchOk;
+    });
+  }, [listings, selectedCategory, searchTerm]);
+
+  const supportListings = useMemo(() => {
+    return listings.filter(
+      (item) =>
+        item.category === "Giveaways" ||
+        item.category === "Restaurant Donations" ||
+        item.category === "Community Donations" ||
+        item.category === "Help Request"
+    );
+  }, [listings]);
+
+  const featuredListings = listings.filter((item) => item.featured).slice(0, 4);
+  const savedListings = listings.filter((item) => savedIds.includes(item.id));
+  const myPosts = listings.filter((item) => item.ownPost);
+
+  const toggleSave = (id) => {
+    setSavedIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const copyShareLink = async () => {
+    try {
+      await navigator.clipboard.writeText(APP_URL);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 1800);
+    } catch {
+      alert("Could not copy link.");
+    }
+  };
+
+  const handleSubscribe = () => {
+    if (!subscribeEmail.trim()) return;
+    setSubscribeMessage("You are subscribed to Naborly updates.");
+    setSubscribeEmail("");
+  };
+
+  const handleAuthChange = (e) => {
+    const { name, value } = e.target;
+    setAuthForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+    setAuthMessage("");
+
+    const { data, error } = await supabase.auth.signUp({
+      email: authForm.email,
+      password: authForm.password,
+      options: {
+        data: {
+          full_name: authForm.fullName,
+          whatsapp: authForm.whatsapp,
+        },
+      },
+    });
+
+    if (error) {
+      setAuthMessage(error.message);
+      return;
+    }
+
+    if (data.user) {
+      await supabase.from("profiles").upsert({
+        id: data.user.id,
+        full_name: authForm.fullName,
+        whatsapp: authForm.whatsapp,
+        market: selectedMarket,
+      });
+    }
+
+    setAuthMessage("Account created.");
+  };
+
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    setAuthMessage("");
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: authForm.email,
+      password: authForm.password,
+    });
+
+    if (error) {
+      setAuthMessage(error.message);
+      return;
+    }
+
+    setShowAuthModal(false);
+    setActiveTab("account");
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePostUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData((prev) => ({
+        ...prev,
+        imageName: file.name,
+        imagePreview: reader.result,
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const submitPost = (e) => {
+    e.preventDefault();
+
+    if (!formData.title || !formData.location || !formData.description) return;
+
+    if (editingId) {
+      setListings((prev) =>
+        prev.map((item) =>
+          item.id === editingId
+            ? {
+                ...item,
+                ...formData,
+                quantity: Number(formData.quantity || 1),
+              }
+            : item
+        )
+      );
+    } else {
+      const newItem = {
+        id: Date.now(),
+        title: formData.title,
+        category: formData.category,
+        location: formData.location,
+        price: formData.price || "Free",
+        description: formData.description,
+        whatsapp: formData.whatsapp,
+        seller: user?.user_metadata?.full_name || user?.email || "You",
+        quantity: Number(formData.quantity || 1),
+        claimed: 0,
+        itemsAvailable: formData.itemsAvailable || "See listing details",
+        badge: "New Post",
+        ownPost: true,
+        featured: false,
+        imageName: formData.imageName,
+        imagePreview: formData.imagePreview,
+      };
+      setListings((prev) => [newItem, ...prev]);
+    }
+
+    setEditingId(null);
+    setFormData({
+      title: "",
+      category: "Food for Sale",
+      location: "",
+      price: "",
+      description: "",
+      whatsapp: "",
+      quantity: "",
+      itemsAvailable: "",
+      imageName: "",
+      imagePreview: "",
+    });
+    setActiveTab("marketplace");
+  };
+
+  const editPost = (item) => {
+    setEditingId(item.id);
+    setFormData({
+      title: item.title,
+      category: item.category,
+      location: item.location,
+      price: item.price,
+      description: item.description,
+      whatsapp: item.whatsapp,
+      quantity: String(item.quantity),
+      itemsAvailable: item.itemsAvailable,
+      imageName: item.imageName || "",
+      imagePreview: item.imagePreview || "",
+    });
+    setActiveTab("post");
+  };
+
+  const bookTalent = (item) => {
+    setBookingItem(item);
+    setBookingMessage("");
+    setBookingData({
+      date: "",
+      time: "",
+      notes: "",
+    });
+  };
+
+  const submitBooking = () => {
+    if (!bookingData.date || !bookingData.time) return;
+    setBookingMessage("Booking request captured. Next we can connect this to a real calendar backend.");
+  };
+
+  const handleMedUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setMedForm((prev) => ({ ...prev, prescriptionName: file.name }));
+    }
+  };
+
+  const submitMedSupport = (e) => {
+    e.preventDefault();
+    setMedSubmitted(true);
+  };
+
+  const ads = [
+    { title: "Featured Vendor", text: "Promote your products to the naborhood." },
+    { title: "Featured Talent", text: "Book trusted local help faster." },
+    { title: "Sponsored Event", text: "Bring more people to your event." },
+  ];
+
+  return (
+    <div className="app-shell">
+      <header className="topbar">
+        <div className="brand-stack">
+          <div className="brand-mark">Naborly</div>
+          <div className="welcome-inline">Welcome to Naborly JA</div>
+          <div className="brand-sub">
+            Neighbors helping neighbors, selling to neighbors.
+          </div>
+        </div>
+
+        <div className="topbar-actions">
+          <select
+            className="location-select"
+            value={selectedMarket}
+            onChange={(e) => setSelectedMarket(e.target.value)}
+          >
+            {MARKETS.map((location) => (
+              <option key={location} value={location}>
+                {location}
+              </option>
+            ))}
+          </select>
+
+          <button
+            className="outline-btn"
+            onClick={() => {
+              if (user) {
+                setActiveTab("account");
+              } else {
+                setAuthMode("signin");
+                setShowAuthModal(true);
+              }
+            }}
+          >
+            {user ? "Account" : "Sign In"}
+          </button>
+
+          <button
+            className="solid-btn"
+            onClick={() => {
+              if (user) {
+                setActiveTab("account");
+              } else {
+                setAuthMode("signup");
+                setShowAuthModal(true);
+              }
+            }}
+          >
+            {user ? "My Account" : "Sign Up"}
+          </button>
+        </div>
+      </header>
+
+      <section className="hero jamaica-hero">
+        <div className="hero-overlay" />
+        <div className="hero-content">
+          <h1>
+            Food, support, local talent, events in the naborhood, restaurant donations,
+            community giving, and direct vendor connection.
+          </h1>
+          <p>
+            A premium neighborhood ecosystem built for everyday life, opportunity,
+            care, and growth.
+          </p>
+          <WaveHello />
+
+          <div className="hero-buttons">
+            <button className="solid-btn" onClick={() => setActiveTab("marketplace")}>
+              Explore Marketplace
+            </button>
+            <button className="outline-light-btn" onClick={() => setActiveTab("support")}>
+              Food & Support
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <nav className="main-tabs">
+        <button
+          className={activeTab === "home" ? "tab active" : "tab"}
+          onClick={() => setActiveTab("home")}
+        >
+          Home
+        </button>
+        <button
+          className={activeTab === "marketplace" ? "tab active" : "tab"}
+          onClick={() => setActiveTab("marketplace")}
+        >
+          Marketplace
+        </button>
+        <button
+          className={activeTab === "support" ? "tab active" : "tab"}
+          onClick={() => setActiveTab("support")}
+        >
+          Food & Support
+        </button>
+        <button
+          className={activeTab === "post" ? "tab active" : "tab"}
+          onClick={() => setActiveTab("post")}
+        >
+          Post to Naborhood
+        </button>
+        <button
+          className={activeTab === "partners" ? "tab active" : "tab"}
+          onClick={() => setActiveTab("partners")}
+        >
+          Partners & Ads
+        </button>
+        <button
+          className={activeTab === "saved" ? "tab active" : "tab"}
+          onClick={() => setActiveTab("saved")}
+        >
+          Saved & Followed
+        </button>
+        <button
+          className={activeTab === "account" ? "tab active" : "tab"}
+          onClick={() => setActiveTab("account")}
+        >
+          Account
+        </button>
+      </nav>
+
+      <main className="main-content">
+        {showSignup && (
+          <section className="signup-banner signup-banner-slim">
+            <div>
+              <h3>Join Naborly JA</h3>
+              <p>
+                Create your free account, share to WhatsApp and social, and grow your
+                neighborhood ecosystem.
+              </p>
+            </div>
+            <div className="signup-actions">
+              <button
+                className="solid-btn"
+                onClick={() => {
+                  setAuthMode("signup");
+                  setShowAuthModal(true);
+                  setActiveTab("account");
+                }}
+              >
+                Create Free Account
+              </button>
+              <button className="ghost-btn" onClick={() => setShowSignup(false)}>
+                Dismiss
+              </button>
+            </div>
+          </section>
+        )}
+
+        {activeTab === "home" && (
+          <>
+            <section className="stats-grid">
+              <div className="stat-card">
+                <strong>{stats.activeListings}</strong>
+                <span>Active Listings</span>
+              </div>
+              <div className="stat-card">
+                <strong>{stats.talentCount}</strong>
+                <span>Local Talent</span>
+              </div>
+              <div className="stat-card">
+                <strong>{stats.eventCount}</strong>
+                <span>Events Nearby</span>
+              </div>
+              <div className="stat-card">
+                <strong>{stats.donationCount}</strong>
+                <span>Donations & Giveaways</span>
+              </div>
+              <div className="stat-card">
+                <strong>{savedIds.length}</strong>
+                <span>Saved & Followed</span>
+              </div>
+              <div className="stat-card">
+                <strong>{naborPoints}</strong>
+                <span>Nabor Points</span>
+              </div>
+            </section>
+
+            <section className="quick-action-grid">
+              <button className="action-card" onClick={() => setActiveTab("support")}>
+                <strong>Food Support</strong>
+                <span>Emergency help, giveaways, restaurant donations, and community support.</span>
+              </button>
+              <button
+                className="action-card"
+                onClick={() => {
+                  setActiveTab("marketplace");
+                  setSelectedCategory("Local Talent / Services");
+                }}
+              >
+                <strong>Hire Local Talent</strong>
+                <span>Book trusted neighborhood talent and service providers.</span>
+              </button>
+              <button
+                className="action-card"
+                onClick={() => {
+                  setActiveTab("marketplace");
+                  setSelectedCategory("Events in the Naborhood");
+                }}
+              >
+                <strong>Events in the Naborhood</strong>
+                <span>Find what is happening nearby and promote your next event.</span>
+              </button>
+              <button className="action-card" onClick={() => setActiveTab("post")}>
+                <strong>Post to Naborhood</strong>
+                <span>Sell, donate, promote, request help, or share a service.</span>
+              </button>
+            </section>
+
+            <section className="quick-links">
+              <a
+                className="quick-link"
+                href={whatsappLink("", "Naborly JA")}
+                target="_blank"
+                rel="noreferrer"
+              >
+                WhatsApp
+              </a>
+              <button className="quick-link" onClick={() => setActiveTab("support")}>
+                Med Support
+              </button>
+              <button className="quick-link" onClick={() => setActiveTab("partners")}>
+                Restaurant Donations
+              </button>
+              <button className="quick-link" onClick={() => setActiveTab("partners")}>
+                Community Donations
+              </button>
+              <button className="quick-link" onClick={() => setActiveTab("account")}>
+                Share & Earn
+              </button>
+            </section>
+
+            <section className="section-card">
+              <div className="section-header">
+                <h2>Featured in {selectedMarket}</h2>
+                <button className="text-btn" onClick={() => setActiveTab("marketplace")}>
+                  See all
+                </button>
+              </div>
+
+              <div className="listing-grid">
+                {featuredListings.map((item) => (
+                  <article key={item.id} className="listing-card">
+                    <div className="listing-topline">
+                      <span className="pill">{item.category}</span>
+                      <span className="micro-badge">{item.badge}</span>
+                    </div>
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                    <div className="listing-meta">
+                      <span>{item.location}</span>
+                      <span>{item.price}</span>
+                    </div>
+                    <div className="listing-qty">What’s available: {item.itemsAvailable}</div>
+                    <div className="listing-qty">{listingStatus(item)}</div>
+
+                    <div className="card-actions">
+                      <button className="mini-btn" onClick={() => toggleSave(item.id)}>
+                        {savedIds.includes(item.id) ? "Saved" : "Save"}
+                      </button>
+                      <a
+                        className="mini-btn linkish"
+                        href={whatsappLink(item.whatsapp, item.title)}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        WhatsApp
+                      </a>
+                      {item.category === "Local Talent / Services" ? (
+                        <button className="mini-btn" onClick={() => bookTalent(item)}>
+                          Book
+                        </button>
+                      ) : (
+                        <button
+                          className="mini-btn"
+                          onClick={() =>
+                            alert("Payment flow placeholder. Next we can connect real payments.")
+                          }
+                        >
+                          Pay / Reserve
+                        </button>
+                      )}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          </>
+        )}
+
+        {activeTab === "marketplace" && (
+          <>
+            <section className="filters-bar">
+              <input
+                className="search-input"
+                type="text"
+                placeholder="Search food, donations, events, talent, support..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+
+              <select
+                className="category-select"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+              >
+                {FILTER_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+            </section>
+
+            <section className="listing-grid">
+              {filteredListings.map((item) => (
+                <article
+                  key={item.id}
+                  className={`listing-card ${qtyLeft(item) <= 0 ? "sold-out" : ""}`}
+                >
+                  <div className="listing-topline">
+                    <span className="pill">{item.category}</span>
+                    <span className="micro-badge">{item.badge}</span>
+                  </div>
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                  <div className="listing-meta">
+                    <span>{item.location}</span>
+                    <span>{item.price}</span>
+                  </div>
+                  <div className="listing-qty">What’s available: {item.itemsAvailable}</div>
+                  <div className="listing-qty">Quantity: {item.quantity}</div>
+                  <div className="listing-qty">{listingStatus(item)}</div>
+
+                  <div className="listing-note">
+                    Payment options and full product details appear after you open Pay / Reserve or Book Talent.
+                  </div>
+
+                  <div className="card-actions">
+                    <button className="mini-btn" onClick={() => toggleSave(item.id)}>
+                      {savedIds.includes(item.id) ? "Saved" : "Save"}
+                    </button>
+
+                    <a
+                      className="mini-btn linkish"
+                      href={whatsappLink(item.whatsapp, item.title)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      WhatsApp Vendor
+                    </a>
+
+                    {item.category === "Local Talent / Services" ? (
+                      <button className="mini-btn" onClick={() => bookTalent(item)}>
+                        Book Talent
+                      </button>
+                    ) : (
+                      <button
+                        className="mini-btn"
+                        onClick={() =>
+                          alert("Payment/reserve flow placeholder. Next we can connect real payments.")
+                        }
+                      >
+                        Pay / Reserve
+                      </button>
+                    )}
+
+                    {item.ownPost ? (
+                      <button className="mini-btn" onClick={() => editPost(item)}>
+                        Edit Post
+                      </button>
+                    ) : null}
+                  </div>
+                </article>
+              ))}
+            </section>
+          </>
+        )}
+
+        {activeTab === "support" && (
+          <>
+            <section className="section-card">
+              <div className="section-header">
+                <h2>Food & Support</h2>
+              </div>
+              <div className="listing-grid">
+                {supportListings.map((item) => (
+                  <article
+                    key={item.id}
+                    className={`listing-card ${qtyLeft(item) <= 0 ? "sold-out" : ""}`}
+                  >
+                    <div className="listing-topline">
+                      <span className="pill">{item.category}</span>
+                      <span className="micro-badge">{item.badge}</span>
+                    </div>
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                    <div className="listing-meta">
+                      <span>{item.location}</span>
+                      <span>{item.price}</span>
+                    </div>
+                    <div className="listing-qty">What’s available: {item.itemsAvailable}</div>
+                    <div className="listing-qty">{listingStatus(item)}</div>
+                    <div className="card-actions">
+                      <a
+                        className="mini-btn linkish"
+                        href={whatsappLink(item.whatsapp, item.title)}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        WhatsApp Support
+                      </a>
+                      <button className="mini-btn">Learn More</button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            <section className="two-col">
+              <div className="section-card">
+                <h2>Food & Support</h2>
+                <p>
+                  Find restaurant donations, giveaways, community donations, and neighborhood support.
+                </p>
+                <ul className="support-list">
+                  <li>Restaurant food donations</li>
+                  <li>Community giveaways</li>
+                  <li>Church and partner support</li>
+                  <li>Help requests</li>
+                  <li>Direct WhatsApp coordination</li>
+                </ul>
+                <a
+                  className="solid-btn inline-btn"
+                  href={whatsappLink("", "Food Support")}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Ask for Help on WhatsApp
+                </a>
+              </div>
+
+              <div className="section-card">
+                <h2>Med Support</h2>
+                <p>
+                  Upload prescription details, choose payment or pickup, and coordinate by WhatsApp.
+                </p>
+
+                <form className="post-form" onSubmit={submitMedSupport}>
+                  <input
+                    className="search-input"
+                    placeholder="Patient name"
+                    value={medForm.patientName}
+                    onChange={(e) =>
+                      setMedForm((prev) => ({ ...prev, patientName: e.target.value }))
+                    }
+                  />
+                  <input
+                    className="search-input"
+                    placeholder="Medication needed"
+                    value={medForm.medicationNeed}
+                    onChange={(e) =>
+                      setMedForm((prev) => ({ ...prev, medicationNeed: e.target.value }))
+                    }
+                  />
+                  <input
+                    className="search-input"
+                    placeholder="WhatsApp number"
+                    value={medForm.whatsapp}
+                    onChange={(e) =>
+                      setMedForm((prev) => ({ ...prev, whatsapp: e.target.value }))
+                    }
+                  />
+                  <select
+                    className="category-select"
+                    value={medForm.pickupMode}
+                    onChange={(e) =>
+                      setMedForm((prev) => ({ ...prev, pickupMode: e.target.value }))
+                    }
+                  >
+                    <option>Pickup</option>
+                    <option>Payment + Delivery</option>
+                  </select>
+                  <select
+                    className="category-select"
+                    value={medForm.paymentOption}
+                    onChange={(e) =>
+                      setMedForm((prev) => ({ ...prev, paymentOption: e.target.value }))
+                    }
+                  >
+                    {PAYMENT_OPTIONS.map((option) => (
+                      <option key={option}>{option}</option>
+                    ))}
+                  </select>
+                  <label className="upload-box upload-left">
+                    <strong>Prescription Upload</strong>
+                    <small>{medForm.prescriptionName || "Attach prescription image or file"}</small>
+                    <input type="file" className="hidden-input" onChange={handleMedUpload} />
+                  </label>
+                  <textarea
+                    className="text-area"
+                    rows="4"
+                    placeholder="Notes"
+                    value={medForm.notes}
+                    onChange={(e) =>
+                      setMedForm((prev) => ({ ...prev, notes: e.target.value }))
+                    }
+                  />
+                  <div className="info-box">
+                    <strong>Pickup note</strong>
+                    <p>
+                      If a family member or helper is picking up medication, the prescription
+                      should be presented at pickup.
+                    </p>
+                  </div>
+                  <div className="card-actions">
+                    <button className="solid-btn" type="submit">
+                      Submit Med Support
+                    </button>
+                    <a
+                      className="mini-btn linkish"
+                      href={whatsappLink(medForm.whatsapp, "Medication Support")}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      WhatsApp Support
+                    </a>
+                  </div>
+                </form>
+
+                {medSubmitted ? (
+                  <p className="subscribe-note">Med Support request captured.</p>
+                ) : null}
+              </div>
+            </section>
+          </>
+        )}
+
+        {activeTab === "post" && (
+          <section className="section-card narrow">
+            <h2>{editingId ? "Edit Post to Naborhood" : "Post to Naborhood"}</h2>
+            <p>
+              Sell, donate, promote, share a service, post an event, or request help.
+            </p>
+
+            <form className="post-form" onSubmit={submitPost}>
+              <input
+                name="title"
+                value={formData.title}
+                onChange={handleFormChange}
+                className="search-input"
+                placeholder="Post title"
+                required
+              />
+
+              <select
+                name="category"
+                value={formData.category}
+                onChange={handleFormChange}
+                className="category-select"
+              >
+                {POST_CATEGORIES.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                name="location"
+                value={formData.location}
+                onChange={handleFormChange}
+                className="search-input"
+                placeholder="Neighborhood / location"
+                required
+              />
+
+              <input
+                name="price"
+                value={formData.price}
+                onChange={handleFormChange}
+                className="search-input"
+                placeholder="Price or Free"
+              />
+
+              <input
+                name="quantity"
+                value={formData.quantity}
+                onChange={handleFormChange}
+                className="search-input"
+                placeholder="Quantity available"
+              />
+
+              <input
+                name="itemsAvailable"
+                value={formData.itemsAvailable}
+                onChange={handleFormChange}
+                className="search-input"
+                placeholder="What’s available if more than one"
+              />
+
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleFormChange}
+                className="text-area"
+                placeholder="Describe your post"
+                rows="5"
+                required
+              />
+
+              <input
+                name="whatsapp"
+                value={formData.whatsapp}
+                onChange={handleFormChange}
+                className="search-input"
+                placeholder="WhatsApp number"
+              />
+
+              <label className="upload-box upload-left">
+                <strong>Upload Image</strong>
+                <small>{formData.imageName || "Choose a product or service image"}</small>
+                <input
+                  type="file"
+                  className="hidden-input"
+                  accept="image/*"
+                  onChange={handlePostUpload}
+                />
+              </label>
+
+              {formData.imagePreview ? (
+                <div className="image-preview-wrap">
+                  <img src={formData.imagePreview} alt="Preview" className="image-preview" />
+                </div>
+              ) : null}
+
+              <div className="card-actions">
+                <button type="submit" className="solid-btn">
+                  {editingId ? "Save Changes" : "Post to Naborhood"}
+                </button>
+                {editingId ? (
+                  <button
+                    type="button"
+                    className="mini-btn"
+                    onClick={() => {
+                      setEditingId(null);
+                      setFormData({
+                        title: "",
+                        category: "Food for Sale",
+                        location: "",
+                        price: "",
+                        description: "",
+                        whatsapp: "",
+                        quantity: "",
+                        itemsAvailable: "",
+                        imageName: "",
+                        imagePreview: "",
+                      });
+                    }}
+                  >
+                    Cancel Edit
+                  </button>
+                ) : null}
+              </div>
+            </form>
+          </section>
+        )}
+
+        {activeTab === "partners" && (
+          <section className="two-col">
+            <div className="section-card">
+              <h2>Partners & Ads</h2>
+              <p>
+                Restaurants, churches, vendors, events, talent, and neighborhood businesses can
+                grow through Naborly.
+              </p>
+              <div className="partner-grid">
+                <div className="partner-box">Restaurant Donations</div>
+                <div className="partner-box">Community Donations</div>
+                <div className="partner-box">Featured Vendors</div>
+                <div className="partner-box">Promoted Events</div>
+              </div>
+              <div className="partner-plan-grid">
+                <div className="partner-plan">
+                  <strong>Starter Partner</strong>
+                  <span>Free</span>
+                  <p>Basic presence and community visibility.</p>
+                </div>
+                <div className="partner-plan">
+                  <strong>Featured Seller</strong>
+                  <span>JMD 3,000 / month</span>
+                  <p>Featured placement for products and services.</p>
+                </div>
+                <div className="partner-plan">
+                  <strong>Business Pro</strong>
+                  <span>JMD 10,000 / month</span>
+                  <p>Homepage exposure, promoted listings, and better reach.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="section-card">
+              <h2>Sponsored Spaces</h2>
+              <div className="ads-grid">
+                {ads.map((ad) => (
+                  <div className="ad-card" key={ad.title}>
+                    <strong>{ad.title}</strong>
+                    <p>{ad.text}</p>
+                    <button
+                      className="mini-btn"
+                      onClick={() => setActiveTab("partners")}
+                    >
+                      Promote
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <div className="subscribe-box">
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Enter your email"
+                  value={subscribeEmail}
+                  onChange={(e) => setSubscribeEmail(e.target.value)}
+                />
+                <button className="solid-btn" onClick={handleSubscribe}>
+                  Subscribe
+                </button>
+              </div>
+              {subscribeMessage ? <p className="subscribe-note">{subscribeMessage}</p> : null}
+            </div>
+          </section>
+        )}
+
+        {activeTab === "saved" && (
+          <section className="section-card">
+            <h2>Saved & Followed</h2>
+            <div className="listing-grid">
+              {savedListings.length ? (
+                savedListings.map((item) => (
+                  <article key={item.id} className="listing-card">
+                    <div className="listing-topline">
+                      <span className="pill">{item.category}</span>
+                      <span className="micro-badge">{item.badge}</span>
+                    </div>
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                    <div className="listing-meta">
+                      <span>{item.location}</span>
+                      <span>{item.price}</span>
+                    </div>
+                    <div className="listing-qty">{listingStatus(item)}</div>
+                  </article>
+                ))
+              ) : (
+                <p>No saved posts yet.</p>
+              )}
+            </div>
+          </section>
+        )}
+
+        {activeTab === "account" && (
+          <section className="two-col">
+            <div className="section-card">
+              <h2>Account</h2>
+              <div className="account-box">
+                <div className="account-line">
+                  <strong>Profile:</strong>{" "}
+                  {user?.user_metadata?.full_name || user?.email || "Community Member"}
+                </div>
+                <div className="account-line"><strong>Market:</strong> {selectedMarket}</div>
+                <div className="account-line"><strong>Nabor Points:</strong> {naborPoints}</div>
+                <div className="account-line"><strong>My Posts:</strong> {myPosts.length}</div>
+              </div>
+
+              <div className="card-actions">
+                {user ? (
+                  <button className="mini-btn" onClick={handleSignOut}>
+                    Sign Out
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      className="mini-btn"
+                      onClick={() => {
+                        setAuthMode("signin");
+                        setShowAuthModal(true);
+                      }}
+                    >
+                      Sign In
+                    </button>
+                    <button
+                      className="mini-btn"
+                      onClick={() => {
+                        setAuthMode("signup");
+                        setShowAuthModal(true);
+                      }}
+                    >
+                      Create Free Account
+                    </button>
+                  </>
+                )}
+              </div>
+
+              <div className="section-card inner-card">
+                <h3>Share & Earn</h3>
+                <p>Share Naborly by QR, WhatsApp, or social and earn Nabor Points.</p>
+                <div className="qr-box">
+                  <img src={qrCodeUrl(APP_URL)} alt="Naborly QR" className="qr-image" />
+                </div>
+                <div className="card-actions">
+                  <a
+                    className="mini-btn linkish"
+                    href={`https://wa.me/?text=${encodeURIComponent(`${SHARE_TEXT} ${APP_URL}`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Share on WhatsApp
+                  </a>
+                  <a
+                    className="mini-btn linkish"
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(APP_URL)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Share to Social
+                  </a>
+                  <button className="mini-btn" onClick={copyShareLink}>
+                    {shareCopied ? "Copied" : "Copy Link"}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="section-card">
+              <h2>Tracking & Stats</h2>
+              <div className="promise-grid">
+                <div className="info-box">
+                  <strong>Active Listings</strong>
+                  <p>{stats.activeListings}</p>
+                </div>
+                <div className="info-box">
+                  <strong>WhatsApp-Ready Posts</strong>
+                  <p>{listings.filter((item) => item.whatsapp).length}</p>
+                </div>
+                <div className="info-box">
+                  <strong>Saved & Followed</strong>
+                  <p>{savedIds.length}</p>
+                </div>
+                <div className="info-box">
+                  <strong>My Editable Posts</strong>
+                  <p>{myPosts.length}</p>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+      </main>
+
+      {showAuthModal ? (
+        <div className="modal-backdrop">
+          <div className="modal-card">
+            <div className="modal-head">
+              <h3>{authMode === "signup" ? "Create Free Account" : "Sign In"}</h3>
+              <button className="mini-btn" onClick={() => setShowAuthModal(false)}>
+                Close
+              </button>
+            </div>
+
+            <form
+              className="post-form"
+              onSubmit={authMode === "signup" ? handleSignUp : handleSignIn}
+            >
+              {authMode === "signup" ? (
+                <>
+                  <input
+                    className="search-input"
+                    name="fullName"
+                    placeholder="Full name"
+                    value={authForm.fullName}
+                    onChange={handleAuthChange}
+                  />
+                  <input
+                    className="search-input"
+                    name="whatsapp"
+                    placeholder="WhatsApp number"
+                    value={authForm.whatsapp}
+                    onChange={handleAuthChange}
+                  />
+                </>
+              ) : null}
+
+              <input
+                className="search-input"
+                name="email"
+                type="email"
+                placeholder="Email"
+                value={authForm.email}
+                onChange={handleAuthChange}
+              />
+
+              <input
+                className="search-input"
+                name="password"
+                type="password"
+                placeholder="Password"
+                value={authForm.password}
+                onChange={handleAuthChange}
+              />
+
+              <button className="solid-btn" type="submit">
+                {authMode === "signup" ? "Create Account" : "Sign In"}
+              </button>
+
+              <button
+                type="button"
+                className="mini-btn"
+                onClick={() =>
+                  setAuthMode((prev) => (prev === "signup" ? "signin" : "signup"))
+                }
+              >
+                {authMode === "signup"
+                  ? "Already have an account? Sign In"
+                  : "Need an account? Sign Up"}
+              </button>
+
+              {authMessage ? <p className="subscribe-note">{authMessage}</p> : null}
+            </form>
+          </div>
+        </div>
+      ) : null}
+
+      {bookingItem ? (
+        <div className="modal-backdrop">
+          <div className="modal-card">
+            <div className="modal-head">
+              <h3>Book Talent Appointment</h3>
+              <button className="mini-btn" onClick={() => setBookingItem(null)}>
+                Close
+              </button>
+            </div>
+            <p className="modal-sub">
+              {bookingItem.title} · {bookingItem.location}
+            </p>
+            <div className="post-form">
+              <input
+                className="search-input"
+                type="date"
+                value={bookingData.date}
+                onChange={(e) => setBookingData((prev) => ({ ...prev, date: e.target.value }))}
+              />
+              <input
+                className="search-input"
+                type="time"
+                value={bookingData.time}
+                onChange={(e) => setBookingData((prev) => ({ ...prev, time: e.target.value }))}
+              />
+              <textarea
+                className="text-area"
+                rows="3"
+                placeholder="Notes"
+                value={bookingData.notes}
+                onChange={(e) => setBookingData((prev) => ({ ...prev, notes: e.target.value }))}
+              />
+              <div className="card-actions">
+                <button className="solid-btn" onClick={submitBooking}>
+                  Confirm Booking
+                </button>
+                <a
+                  className="mini-btn linkish"
+                  href={whatsappLink(bookingItem.whatsapp, bookingItem.title)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  WhatsApp Talent
+                </a>
+              </div>
+              {bookingMessage ? <p className="subscribe-note">{bookingMessage}</p> : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export default App;
