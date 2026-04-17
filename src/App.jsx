@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "./supabaseClient";
 import "./styles.css";
 
 const APP_URL = "https://naborlyja.com/";
@@ -201,7 +202,17 @@ function App() {
   const [subscribeMessage, setSubscribeMessage] = useState("");
   const [listings, setListings] = useState(STARTER_LISTINGS);
   const [editingId, setEditingId] = useState(null);
+const [user, setUser] = useState(null);
+const [showAuthModal, setShowAuthModal] = useState(false);
+const [authMode, setAuthMode] = useState("signin");
+const [authMessage, setAuthMessage] = useState("");
 
+const [authForm, setAuthForm] = useState({
+  fullName: "",
+  whatsapp: "",
+  email: "",
+  password: "",
+});
   const [formData, setFormData] = useState({
     title: "",
     category: "Food for Sale",
@@ -228,7 +239,19 @@ function App() {
     notes: "",
     prescriptionName: "",
   });
+useEffect(() => {
+  supabase.auth.getUser().then(({ data }) => {
+    setUser(data.user || null);
+  });
 
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((_event, session) => {
+    setUser(session?.user || null);
+  });
+
+  return () => subscription.unsubscribe();
+}, []);
   const stats = useMemo(() => {
     const activeListings = listings.filter((item) => qtyLeft(item) > 0).length;
     const talentCount = listings.filter(
@@ -287,7 +310,62 @@ function App() {
     setSubscribeMessage("You are subscribed to Naborly updates.");
     setSubscribeEmail("");
   };
+const handleAuthChange = (e) => {
+  const { name, value } = e.target;
+  setAuthForm((prev) => ({ ...prev, [name]: value }));
+};
 
+const handleSignUp = async (e) => {
+  e.preventDefault();
+  setAuthMessage("");
+
+  const { data, error } = await supabase.auth.signUp({
+    email: authForm.email,
+    password: authForm.password,
+    options: {
+      data: {
+        full_name: authForm.fullName,
+        whatsapp: authForm.whatsapp,
+      },
+    },
+  });
+
+  if (error) {
+    setAuthMessage(error.message);
+    return;
+  }
+
+  if (data.user) {
+    await supabase.from("profiles").upsert({
+      id: data.user.id,
+      full_name: authForm.fullName,
+      whatsapp: authForm.whatsapp,
+      market: selectedMarket,
+    });
+  }
+
+  setAuthMessage("Account created.");
+};
+
+const handleSignIn = async (e) => {
+  e.preventDefault();
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email: authForm.email,
+    password: authForm.password,
+  });
+
+  if (error) {
+    setAuthMessage(error.message);
+    return;
+  }
+
+  setShowAuthModal(false);
+};
+
+const handleSignOut = async () => {
+  await supabase.auth.signOut();
+};
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -416,12 +494,33 @@ function App() {
             ))}
           </select>
 
-          <button className="outline-btn" onClick={() => setActiveTab("account")}>
-            Account
-          </button>
-          <button className="solid-btn" onClick={() => setShowSignup(true)}>
-            Sign Up
-          </button>
+          <button
+  className="outline-btn"
+  onClick={() => {
+    if (user) {
+      setActiveTab("account");
+    } else {
+      setAuthMode("signin");
+      setShowAuthModal(true);
+    }
+  }}
+>
+  {user ? "Account" : "Sign In"}
+</button>
+
+<button
+  className="solid-btn"
+  onClick={() => {
+    if (user) {
+      setActiveTab("account");
+    } else {
+      setAuthMode("signup");
+      setShowAuthModal(true);
+    }
+  }}
+>
+  {user ? "My Account" : "Sign Up"}
+</button>
         </div>
       </header>
 
