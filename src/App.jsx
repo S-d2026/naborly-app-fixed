@@ -1,421 +1,371 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react'
 
-const STORAGE_KEYS = {
-  session: 'naborly_session',
-  listings: 'naborly_listings',
-  reports: 'naborly_reports',
-  favorites: 'naborly_favorites',
-};
+const neighborhoodData = [
+  { name: 'Kingston', vibe: 'Fast-moving city listings', count: 42 },
+  { name: 'Montego Bay', vibe: 'Food drops and beach-town trades', count: 18 },
+  { name: 'Spanish Town', vibe: 'Family needs and local services', count: 26 },
+  { name: 'Mandeville', vibe: 'Fresh produce and home support', count: 15 },
+]
 
 const seedListings = [
   {
-    id: 'l1',
-    title: 'Fresh mangoes and bananas',
-    type: 'Food',
-    mode: 'For Sale',
-    price: '15',
-    neighborhood: 'Kingston 8',
-    contact: 'WhatsApp 876-555-0101',
-    description: 'Bagged fruit available for pickup this afternoon.',
-    image: '',
-    seller: 'Marcia',
-    approved: true,
-    createdAt: '2026-04-16T08:00:00.000Z',
+    id: 1,
+    type: 'Food for Sale',
+    title: 'Fresh ackee, breadfruit, and callaloo bundle',
+    price: 'JMD 2,200',
+    neighborhood: 'Kingston',
+    pickup: 'Half-Way Tree pickup at 5:30 PM',
+    contact: 'WhatsApp seller',
+    tag: 'Produce',
   },
   {
-    id: 'l2',
-    title: 'Breadfruit giveaway',
+    id: 2,
     type: 'Giveaway',
-    mode: 'Free',
-    price: '0',
-    neighborhood: 'Montego Bay',
-    contact: 'Text 876-555-0130',
-    description: 'First come first served. Ideal for families.',
-    image: '',
-    seller: 'Community Pantry',
-    approved: true,
-    createdAt: '2026-04-15T17:30:00.000Z',
+    title: 'Free mango bag for same-day pickup',
+    price: 'Free',
+    neighborhood: 'Spanish Town',
+    pickup: 'Pickup near Angels',
+    contact: 'Message donor',
+    tag: 'Food Help',
   },
   {
-    id: 'l3',
-    title: 'Electrician available this weekend',
+    id: 3,
     type: 'Skilled Worker',
-    mode: 'Service',
-    price: 'Call',
-    neighborhood: 'Spanish Town',
-    contact: 'Call 876-555-0172',
-    description: 'Home repairs, wiring, and troubleshooting.',
-    image: '',
-    seller: 'Devon Repairs',
-    approved: true,
-    createdAt: '2026-04-14T13:20:00.000Z',
+    title: 'Plumber available for leaks and pipe repair',
+    price: 'From JMD 6,000',
+    neighborhood: 'Montego Bay',
+    pickup: 'Mobile service',
+    contact: 'Book worker',
+    tag: 'Services',
   },
-];
+  {
+    id: 4,
+    type: 'Event',
+    title: 'Community food fair and small business pop-up',
+    price: 'Free entry',
+    neighborhood: 'Mandeville',
+    pickup: 'Saturday 2 PM',
+    contact: 'View details',
+    tag: 'Community',
+  },
+]
 
-const seedReports = [];
+const tabOptions = ['All', 'Food for Sale', 'Giveaway', 'Skilled Worker', 'Event']
 
-function readStorage(key, fallback) {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function writeStorage(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
-}
-
-function App() {
-  const [session, setSession] = useState(() => readStorage(STORAGE_KEYS.session, null));
-  const [listings, setListings] = useState(() => readStorage(STORAGE_KEYS.listings, seedListings));
-  const [reports, setReports] = useState(() => readStorage(STORAGE_KEYS.reports, seedReports));
-  const [favorites, setFavorites] = useState(() => readStorage(STORAGE_KEYS.favorites, {}));
-  const [tab, setTab] = useState('browse');
-  const [search, setSearch] = useState('');
-  const [filterType, setFilterType] = useState('All');
-  const [filterNeighborhood, setFilterNeighborhood] = useState('All');
-  const [postForm, setPostForm] = useState({
+export default function App() {
+  const [activeTab, setActiveTab] = useState('All')
+  const [selectedNeighborhood, setSelectedNeighborhood] = useState('All neighborhoods')
+  const [search, setSearch] = useState('')
+  const [favorites, setFavorites] = useState([1, 4])
+  const [signedIn, setSignedIn] = useState(false)
+  const [currentView, setCurrentView] = useState('home')
+  const [listings, setListings] = useState(seedListings)
+  const [form, setForm] = useState({
     title: '',
-    type: 'Food',
-    mode: 'For Sale',
+    type: 'Food for Sale',
     price: '',
-    neighborhood: '',
-    contact: '',
-    seller: '',
-    description: '',
-    image: '',
-  });
-  const [authForm, setAuthForm] = useState({ name: '', email: '', neighborhood: '', role: 'buyer' });
-  const [notice, setNotice] = useState('');
+    neighborhood: 'Kingston',
+    pickup: '',
+  })
 
-  useEffect(() => writeStorage(STORAGE_KEYS.session, session), [session]);
-  useEffect(() => writeStorage(STORAGE_KEYS.listings, listings), [listings]);
-  useEffect(() => writeStorage(STORAGE_KEYS.reports, reports), [reports]);
-  useEffect(() => writeStorage(STORAGE_KEYS.favorites, favorites), [favorites]);
+  const filtered = useMemo(() => {
+    return listings.filter((item) => {
+      const tabMatch = activeTab === 'All' || item.type === activeTab
+      const areaMatch =
+        selectedNeighborhood === 'All neighborhoods' || item.neighborhood === selectedNeighborhood
+      const q = search.toLowerCase()
+      const searchMatch =
+        !q ||
+        item.title.toLowerCase().includes(q) ||
+        item.neighborhood.toLowerCase().includes(q) ||
+        item.tag.toLowerCase().includes(q)
+      return tabMatch && areaMatch && searchMatch
+    })
+  }, [activeTab, selectedNeighborhood, search, listings])
 
-  useEffect(() => {
-    const timer = notice ? setTimeout(() => setNotice(''), 2400) : null;
-    return () => timer && clearTimeout(timer);
-  }, [notice]);
+  function toggleFavorite(id) {
+    setFavorites((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+  }
 
-  const visibleListings = useMemo(() => {
-    return listings
-      .filter((item) => item.approved)
-      .filter((item) => (filterType === 'All' ? true : item.type === filterType))
-      .filter((item) => (filterNeighborhood === 'All' ? true : item.neighborhood === filterNeighborhood))
-      .filter((item) => {
-        const q = search.toLowerCase().trim();
-        if (!q) return true;
-        return [item.title, item.description, item.neighborhood, item.seller, item.type]
-          .join(' ')
-          .toLowerCase()
-          .includes(q);
-      })
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  }, [listings, filterType, filterNeighborhood, search]);
-
-  const neighborhoods = ['All', ...new Set(listings.map((item) => item.neighborhood).filter(Boolean))];
-  const types = ['All', 'Food', 'Giveaway', 'Skilled Worker', 'Event', 'Household'];
-  const userFavorites = session ? favorites[session.email] || [] : [];
-  const moderationQueue = listings.filter((item) => !item.approved);
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    if (!authForm.name || !authForm.email) return setNotice('Enter your name and email to continue.');
-    const nextSession = { ...authForm, isAdmin: authForm.email.toLowerCase().includes('admin') };
-    setSession(nextSession);
-    setNotice(`Welcome, ${authForm.name}.`);
-  };
-
-  const toggleFavorite = (listingId) => {
-    if (!session) return setNotice('Sign in to save listings.');
-    const current = favorites[session.email] || [];
-    const next = current.includes(listingId)
-      ? current.filter((id) => id !== listingId)
-      : [...current, listingId];
-    setFavorites({ ...favorites, [session.email]: next });
-  };
-
-  const submitListing = (e) => {
-    e.preventDefault();
-    if (!session) return setNotice('Please sign in before posting.');
-    if (!postForm.title || !postForm.neighborhood || !postForm.contact) {
-      return setNotice('Add a title, neighborhood, and contact before posting.');
+  function submitListing(e) {
+    e.preventDefault()
+    const newListing = {
+      id: Date.now(),
+      ...form,
+      contact: 'Pending contact setup',
+      tag: form.type === 'Skilled Worker' ? 'Services' : form.type === 'Event' ? 'Community' : 'Food',
     }
-    const newItem = {
-      ...postForm,
-      id: `l${Date.now()}`,
-      seller: postForm.seller || session.name,
-      approved: false,
-      createdAt: new Date().toISOString(),
-    };
-    setListings([newItem, ...listings]);
-    setPostForm({
-      title: '', type: 'Food', mode: 'For Sale', price: '', neighborhood: '', contact: '', seller: '', description: '', image: '',
-    });
-    setTab('alerts');
-    setNotice('Listing submitted for admin review.');
-  };
-
-  const handleImageUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setPostForm((prev) => ({ ...prev, image: reader.result }));
-    reader.readAsDataURL(file);
-  };
-
-  const submitReport = (listing) => {
-    if (!session) return setNotice('Sign in to report a listing.');
-    const report = {
-      id: `r${Date.now()}`,
-      listingId: listing.id,
-      listingTitle: listing.title,
-      reporter: session.email,
-      createdAt: new Date().toISOString(),
-      reason: 'Flagged by user for review',
-    };
-    setReports([report, ...reports]);
-    setNotice('Report sent to admin.');
-  };
-
-  const approveListing = (listingId) => {
-    setListings(listings.map((item) => (item.id === listingId ? { ...item, approved: true } : item)));
-    setNotice('Listing approved.');
-  };
-
-  const removeListing = (listingId) => {
-    setListings(listings.filter((item) => item.id !== listingId));
-    setNotice('Listing removed.');
-  };
-
-  const savedListings = visibleListings.filter((item) => userFavorites.includes(item.id));
-
-  if (!session) {
-    return (
-      <div className="shell auth-shell">
-        <div className="hero-card">
-          <div className="badge">Real app starter</div>
-          <h1>Naborly</h1>
-          <p className="lead">A neighborhood marketplace for food, giveaways, skilled workers, and local events.</p>
-          <div className="grid two">
-            <div className="panel soft">
-              <h3>Included now</h3>
-              <ul>
-                <li>Sign-in flow</li>
-                <li>Neighborhood feed</li>
-                <li>Favorites</li>
-                <li>Image upload UI</li>
-                <li>Report listing</li>
-                <li>Admin moderation</li>
-                <li>Mock backend-ready data model</li>
-              </ul>
-            </div>
-            <form className="panel" onSubmit={handleLogin}>
-              <h3>Enter the app</h3>
-              <label>Name<input value={authForm.name} onChange={(e) => setAuthForm({ ...authForm, name: e.target.value })} /></label>
-              <label>Email<input type="email" value={authForm.email} onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })} /></label>
-              <label>Neighborhood<input value={authForm.neighborhood} onChange={(e) => setAuthForm({ ...authForm, neighborhood: e.target.value })} /></label>
-              <label>Role
-                <select value={authForm.role} onChange={(e) => setAuthForm({ ...authForm, role: e.target.value })}>
-                  <option value="buyer">Buyer / neighbor</option>
-                  <option value="seller">Seller / vendor</option>
-                  <option value="helper">Community helper</option>
-                  <option value="admin">Admin tester</option>
-                </select>
-              </label>
-              <button className="primary" type="submit">Continue</button>
-              <p className="small">Use an email containing “admin” to see moderation tools instantly in this starter.</p>
-            </form>
-          </div>
-          {notice && <div className="toast">{notice}</div>}
-        </div>
-      </div>
-    );
+    setListings((prev) => [newListing, ...prev])
+    setForm({ title: '', type: 'Food for Sale', price: '', neighborhood: 'Kingston', pickup: '' })
+    setCurrentView('market')
   }
 
   return (
-    <div className="shell">
+    <div className="app-shell">
       <header className="topbar">
         <div>
-          <div className="badge">Neighborhood commerce</div>
-          <h1>Naborly</h1>
-          <p className="muted">Signed in as {session.name} · {session.neighborhood || 'All neighborhoods'}</p>
+          <div className="brand-row">
+            <div className="brand-badge">N</div>
+            <div>
+              <h1>Naborly</h1>
+              <p>Food, workers, and community links in one neighborhood app.</p>
+            </div>
+          </div>
         </div>
         <div className="top-actions">
-          <button onClick={() => setTab('post')}>New listing</button>
-          <button onClick={() => setSession(null)}>Sign out</button>
+          <button className="ghost-btn" onClick={() => setCurrentView('post')}>Post listing</button>
+          <button className="primary-btn" onClick={() => setSignedIn((s) => !s)}>
+            {signedIn ? 'Signed in' : 'Sign in'}
+          </button>
         </div>
       </header>
 
-      <nav className="tabs">
+      <section className="hero">
+        <div className="hero-copy">
+          <span className="pill">Built for Jamaica communities</span>
+          <h2>Find fresh food, trusted workers, giveaways, and local events near you.</h2>
+          <p>
+            A neighborhood-first marketplace where people can sell, share, meet up, and stay informed.
+          </p>
+          <div className="hero-actions">
+            <button className="primary-btn" onClick={() => setCurrentView('market')}>Browse market</button>
+            <button className="ghost-btn" onClick={() => setCurrentView('favorites')}>View favorites</button>
+          </div>
+        </div>
+        <div className="hero-card">
+          <h3>Today in your area</h3>
+          <ul>
+            <li>12 produce listings added this morning</li>
+            <li>4 worker bookings available this afternoon</li>
+            <li>2 community events this weekend</li>
+          </ul>
+          <div className="stat-grid">
+            <div><strong>1,280+</strong><span>local users</span></div>
+            <div><strong>87%</strong><span>same-day pickups</span></div>
+            <div><strong>24</strong><span>active meet-up spots</span></div>
+          </div>
+        </div>
+      </section>
+
+      <nav className="main-nav">
         {[
-          ['browse', 'Browse'],
+          ['home', 'Home'],
+          ['market', 'Marketplace'],
           ['post', 'Post'],
-          ['saved', `Saved (${userFavorites.length})`],
-          ['alerts', `Alerts (${moderationQueue.length + reports.length})`],
-          ...(session.isAdmin || session.role === 'admin' ? [['admin', 'Admin']] : []),
+          ['favorites', 'Favorites'],
+          ['admin', 'Admin'],
         ].map(([key, label]) => (
-          <button key={key} className={tab === key ? 'active' : ''} onClick={() => setTab(key)}>{label}</button>
+          <button
+            key={key}
+            className={currentView === key ? 'nav-btn active' : 'nav-btn'}
+            onClick={() => setCurrentView(key)}
+          >
+            {label}
+          </button>
         ))}
       </nav>
 
-      {notice && <div className="toast">{notice}</div>}
-
-      {tab === 'browse' && (
+      {currentView === 'home' && (
         <>
-          <section className="panel filter-bar">
-            <input placeholder="Search food, events, workers, giveaways..." value={search} onChange={(e) => setSearch(e.target.value)} />
-            <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>{types.map((t) => <option key={t}>{t}</option>)}</select>
-            <select value={filterNeighborhood} onChange={(e) => setFilterNeighborhood(e.target.value)}>{neighborhoods.map((n) => <option key={n}>{n}</option>)}</select>
+          <section className="section">
+            <div className="section-head">
+              <h3>Browse by neighborhood</h3>
+              <p>Tap into the communities with the most active listings right now.</p>
+            </div>
+            <div className="card-grid neighborhoods">
+              {neighborhoodData.map((item) => (
+                <button
+                  key={item.name}
+                  className="info-card"
+                  onClick={() => {
+                    setSelectedNeighborhood(item.name)
+                    setCurrentView('market')
+                  }}
+                >
+                  <strong>{item.name}</strong>
+                  <span>{item.vibe}</span>
+                  <small>{item.count} active posts</small>
+                </button>
+              ))}
+            </div>
           </section>
-          <section className="grid listing-grid">
-            {visibleListings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-                saved={userFavorites.includes(listing.id)}
-                onSave={() => toggleFavorite(listing.id)}
-                onReport={() => submitReport(listing)}
-              />
-            ))}
-            {!visibleListings.length && <div className="panel">No listings match your search yet.</div>}
+
+          <section className="section two-col">
+            <div className="panel">
+              <h3>Why this version matches your app better</h3>
+              <ul className="clean-list">
+                <li>Neighborhood-first home screen</li>
+                <li>Separate listing types for food, giveaways, workers, and events</li>
+                <li>Favorites and posting flow built in</li>
+                <li>Admin review section for moderation</li>
+                <li>Cleaner Jamaica-focused marketplace branding</li>
+              </ul>
+            </div>
+            <div className="panel soft">
+              <h3>Next live upgrades</h3>
+              <ul className="clean-list">
+                <li>Real user login with Supabase</li>
+                <li>Image upload storage</li>
+                <li>WhatsApp click-to-contact</li>
+                <li>Map meetup points</li>
+                <li>Push alerts for urgent food drops</li>
+              </ul>
+            </div>
           </section>
         </>
       )}
 
-      {tab === 'post' && (
-        <form className="panel form-grid" onSubmit={submitListing}>
-          <h2>Create a listing</h2>
-          <div className="grid two">
-            <label>Title<input value={postForm.title} onChange={(e) => setPostForm({ ...postForm, title: e.target.value })} /></label>
-            <label>Neighborhood<input value={postForm.neighborhood} onChange={(e) => setPostForm({ ...postForm, neighborhood: e.target.value })} /></label>
-            <label>Type
-              <select value={postForm.type} onChange={(e) => setPostForm({ ...postForm, type: e.target.value })}>
-                <option>Food</option><option>Giveaway</option><option>Skilled Worker</option><option>Event</option><option>Household</option>
-              </select>
-            </label>
-            <label>Mode
-              <select value={postForm.mode} onChange={(e) => setPostForm({ ...postForm, mode: e.target.value })}>
-                <option>For Sale</option><option>Free</option><option>Service</option><option>Meetup</option>
-              </select>
-            </label>
-            <label>Price<input value={postForm.price} onChange={(e) => setPostForm({ ...postForm, price: e.target.value })} placeholder="15 / Free / Call" /></label>
-            <label>Contact<input value={postForm.contact} onChange={(e) => setPostForm({ ...postForm, contact: e.target.value })} placeholder="Phone, WhatsApp, or pickup info" /></label>
-            <label>Seller name<input value={postForm.seller} onChange={(e) => setPostForm({ ...postForm, seller: e.target.value })} /></label>
-            <label>Image
-              <input type="file" accept="image/*" onChange={handleImageUpload} />
-            </label>
-          </div>
-          <label>Description<textarea rows="4" value={postForm.description} onChange={(e) => setPostForm({ ...postForm, description: e.target.value })} /></label>
-          {postForm.image && <img className="preview" src={postForm.image} alt="preview" />}
-          <button className="primary" type="submit">Submit for review</button>
-        </form>
-      )}
-
-      {tab === 'saved' && (
-        <section className="grid listing-grid">
-          {savedListings.length ? savedListings.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              saved={true}
-              onSave={() => toggleFavorite(listing.id)}
-              onReport={() => submitReport(listing)}
+      {currentView === 'market' && (
+        <section className="section">
+          <div className="filters">
+            <input
+              className="search-input"
+              placeholder="Search food, workers, events, or area"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
-          )) : <div className="panel">No saved listings yet.</div>}
-        </section>
-      )}
-
-      {tab === 'alerts' && (
-        <section className="grid two">
-          <div className="panel">
-            <h3>Pending approvals</h3>
-            {moderationQueue.length ? moderationQueue.map((item) => (
-              <div className="alert-item" key={item.id}>
-                <strong>{item.title}</strong>
-                <span>{item.neighborhood}</span>
-                <span>Submitted by {item.seller}</span>
-              </div>
-            )) : <p className="muted">No pending listings.</p>}
+            <select value={selectedNeighborhood} onChange={(e) => setSelectedNeighborhood(e.target.value)}>
+              <option>All neighborhoods</option>
+              {neighborhoodData.map((n) => <option key={n.name}>{n.name}</option>)}
+            </select>
           </div>
-          <div className="panel">
-            <h3>Recent reports</h3>
-            {reports.length ? reports.map((item) => (
-              <div className="alert-item" key={item.id}>
-                <strong>{item.listingTitle}</strong>
-                <span>{item.reason}</span>
-                <span>{item.reporter}</span>
-              </div>
-            )) : <p className="muted">No reports submitted.</p>}
-          </div>
-        </section>
-      )}
 
-      {tab === 'admin' && (session.isAdmin || session.role === 'admin') && (
-        <section className="grid two">
-          <div className="panel">
-            <h2>Moderation queue</h2>
-            {moderationQueue.length ? moderationQueue.map((item) => (
-              <div className="admin-card" key={item.id}>
+          <div className="tabs">
+            {tabOptions.map((tab) => (
+              <button
+                key={tab}
+                className={activeTab === tab ? 'tab active' : 'tab'}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          <div className="card-grid listings">
+            {filtered.map((item) => (
+              <article key={item.id} className="listing-card">
+                <div className="listing-top">
+                  <span className="pill alt">{item.type}</span>
+                  <button className="icon-btn" onClick={() => toggleFavorite(item.id)}>
+                    {favorites.includes(item.id) ? '★' : '☆'}
+                  </button>
+                </div>
                 <h4>{item.title}</h4>
-                <p>{item.description || 'No description provided.'}</p>
-                <div className="meta-row">
-                  <span>{item.neighborhood}</span>
-                  <span>{item.type}</span>
+                <p className="price">{item.price}</p>
+                <p>{item.neighborhood}</p>
+                <p className="muted">{item.pickup}</p>
+                <div className="listing-actions">
+                  <button className="primary-btn small">{item.contact}</button>
+                  <button className="ghost-btn small">Report</button>
                 </div>
-                <div className="admin-actions">
-                  <button className="primary" onClick={() => approveListing(item.id)}>Approve</button>
-                  <button onClick={() => removeListing(item.id)}>Reject</button>
-                </div>
-              </div>
-            )) : <p className="muted">No listings waiting for approval.</p>}
+              </article>
+            ))}
           </div>
-          <div className="panel">
-            <h2>Backend handoff</h2>
-            <p className="muted">Ready to connect to Supabase, Firebase, or a custom API.</p>
-            <pre>{`tables:
-- users(id, name, email, neighborhood, role)
-- listings(id, title, type, mode, price, neighborhood, contact, description, image_url, seller_id, approved)
-- favorites(id, user_id, listing_id)
-- reports(id, user_id, listing_id, reason)
-- messages(id, sender_id, receiver_id, listing_id, body)
+        </section>
+      )}
 
-next integrations:
-1. auth provider
-2. storage bucket
-3. moderation rules
-4. geolocation + map pins
-5. WhatsApp / SMS links`}</pre>
+      {currentView === 'post' && (
+        <section className="section two-col">
+          <form className="panel" onSubmit={submitListing}>
+            <h3>Create a listing</h3>
+            <label>
+              Title
+              <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} required />
+            </label>
+            <label>
+              Type
+              <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
+                <option>Food for Sale</option>
+                <option>Giveaway</option>
+                <option>Skilled Worker</option>
+                <option>Event</option>
+              </select>
+            </label>
+            <label>
+              Price or note
+              <input value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} required />
+            </label>
+            <label>
+              Neighborhood
+              <select value={form.neighborhood} onChange={(e) => setForm({ ...form, neighborhood: e.target.value })}>
+                {neighborhoodData.map((n) => <option key={n.name}>{n.name}</option>)}
+              </select>
+            </label>
+            <label>
+              Pickup, meeting point, or schedule
+              <input value={form.pickup} onChange={(e) => setForm({ ...form, pickup: e.target.value })} required />
+            </label>
+            <label>
+              Upload photo
+              <div className="upload-box">Tap to add photo preview area</div>
+            </label>
+            <button className="primary-btn" type="submit">Publish listing</button>
+          </form>
+          <div className="panel soft">
+            <h3>Posting tips</h3>
+            <ul className="clean-list">
+              <li>Use a clear food or service title</li>
+              <li>State exact pickup area and time</li>
+              <li>Say if it is free, paid, or donation-based</li>
+              <li>Add trusted meetup points later in the live version</li>
+            </ul>
+          </div>
+        </section>
+      )}
+
+      {currentView === 'favorites' && (
+        <section className="section">
+          <div className="section-head">
+            <h3>Saved favorites</h3>
+            <p>Your starred listings stay here for quick access.</p>
+          </div>
+          <div className="card-grid listings">
+            {listings.filter((item) => favorites.includes(item.id)).map((item) => (
+              <article key={item.id} className="listing-card">
+                <span className="pill alt">{item.type}</span>
+                <h4>{item.title}</h4>
+                <p className="price">{item.price}</p>
+                <p>{item.neighborhood}</p>
+                <p className="muted">{item.pickup}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {currentView === 'admin' && (
+        <section className="section two-col">
+          <div className="panel">
+            <h3>Admin moderation queue</h3>
+            <div className="moderation-item">
+              <strong>Flagged listing</strong>
+              <p>“Free mango bag for same-day pickup” was reported by 2 users.</p>
+              <div className="listing-actions">
+                <button className="ghost-btn small">Review</button>
+                <button className="primary-btn small">Approve</button>
+              </div>
+            </div>
+            <div className="moderation-item">
+              <strong>New worker post</strong>
+              <p>Verify phone number and service area before publishing to all users.</p>
+              <div className="listing-actions">
+                <button className="ghost-btn small">Hold</button>
+                <button className="primary-btn small">Publish</button>
+              </div>
+            </div>
+          </div>
+          <div className="panel soft">
+            <h3>Admin controls coming next</h3>
+            <ul className="clean-list">
+              <li>User verification</li>
+              <li>Neighborhood manager roles</li>
+              <li>Category approvals</li>
+              <li>Report history</li>
+            </ul>
           </div>
         </section>
       )}
     </div>
-  );
+  )
 }
-
-function ListingCard({ listing, saved, onSave, onReport }) {
-  return (
-    <article className="panel listing-card">
-      <div className="card-top">
-        <div>
-          <div className="badge alt">{listing.type}</div>
-          <h3>{listing.title}</h3>
-        </div>
-        <button className={saved ? 'saved' : ''} onClick={onSave}>{saved ? '★ Saved' : '☆ Save'}</button>
-      </div>
-      {listing.image ? <img className="listing-image" src={listing.image} alt={listing.title} /> : <div className="listing-image placeholder">Image upload ready</div>}
-      <p>{listing.description}</p>
-      <div className="meta-row"><span>{listing.mode}</span><span>{listing.neighborhood}</span><span>{listing.price === '0' ? 'Free' : listing.price}</span></div>
-      <div className="meta-row"><strong>{listing.seller}</strong><span>{listing.contact}</span></div>
-      <div className="card-actions">
-        <button className="primary">Contact seller</button>
-        <button onClick={onReport}>Report</button>
-      </div>
-    </article>
-  );
-}
-
-export default App;
