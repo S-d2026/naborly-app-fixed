@@ -497,3 +497,119 @@ textarea {
     grid-template-columns: 1fr;
   }
 }
+/* --- Naborly Heart Upgrade Additions --- */
+
+.jamaica-hero {
+  background:
+    linear-gradient(135deg, rgba(0,0,0,0.52), rgba(31,122,63,0.42)),
+    linear-gradient(45deg, #0b7a3b 0%, #d8a625 50%, #111111 100%);
+}
+
+.quick-action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.action-card {
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 22px;
+  padding: 18px;
+  text-align: left;
+  box-shadow: var(--shadow);
+}
+
+.action-card strong {
+  display: block;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.action-card span {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.action-card:hover {
+  transform: translateY(-2px);
+}
+
+.micro-badge {
+  display: inline-block;
+  margin-left: 8px;
+  background: #eef4ff;
+  color: #204a9e;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.promise-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.partner-plan-grid {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.partner-plan {
+  border: 1px solid var(--line);
+  background: white;
+  border-radius: 18px;
+  padding: 16px;
+}
+
+.partner-plan strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.partner-plan span {
+  display: inline-block;
+  font-weight: 800;
+  color: var(--green);
+  margin-bottom: 8px;
+}
+
+.partner-plan p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.subscribe-note {
+  margin-top: 12px;
+  color: var(--green);
+  font-weight: 700;
+}
+
+.hero h1 {
+  text-shadow: 0 4px 18px rgba(0,0,0,0.28);
+}
+
+.hero p {
+  text-shadow: 0 2px 12px rgba(0,0,0,0.2);
+}
+
+.quick-link:hover,
+.mini-btn:hover,
+.partner-plan:hover,
+.action-card:hover {
+  box-shadow: 0 14px 30px rgba(0,0,0,0.08);
+}
+
+@media (max-width: 800px) {
+  .quick-action-grid,
+  .promise-grid {
+    grid-template-columns: 1fr;
+  }
+}
